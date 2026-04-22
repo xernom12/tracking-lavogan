@@ -188,6 +188,28 @@ const buildInitialSessionDrafts = (
     return acc;
   }, {});
 
+const buildSessionEditorDrafts = (
+  submissionId: string,
+  phase: HistoryPhase,
+  timelineLength: number,
+  docs: AdminSubmission["documents"],
+  editableDocNumbers: number[],
+  editableSet: Set<number>,
+): SessionDrafts => {
+  const initialDrafts = buildInitialSessionDrafts(docs, editableSet);
+  const storedDrafts = readStoredSessionDrafts(submissionId, phase, timelineLength, docs.length);
+
+  if (!storedDrafts) return initialDrafts;
+
+  editableDocNumbers.forEach((docNumber) => {
+    const index = docNumber - 1;
+    const storedDraft = storedDrafts[index];
+    if (storedDraft) initialDrafts[index] = storedDraft;
+  });
+
+  return initialDrafts;
+};
+
 const DocumentStatusIcon = ({ status }: { status: "approved" | "revision_required" | "locked" | "empty" }) => {
   if (status === "approved") {
     return (
@@ -865,36 +887,42 @@ const SessionEditor = ({
   submit: (id: string, decisions: SessionDecisionInput[]) => void;
   requireRevisionNote: boolean;
 }) => {
-  const [drafts, setDrafts] = useState<SessionDrafts>({});
-	const [errors, setErrors] = useState<Record<number, boolean>>({});
-	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-	const [isDraftConfirmOpen, setIsDraftConfirmOpen] = useState(false);
-	const [pendingDecisions, setPendingDecisions] = useState<SessionDecisionInput[] | null>(null);
-  const draftResetKeyRef = useRef("");
-
   const editableDocNumbers = useMemo(
     () => docs.map((_, index) => index + 1),
     [docs],
   );
   const editableSet = useMemo(() => new Set(editableDocNumbers), [editableDocNumbers]);
+  const initialDraftResetKey = `${submission.id}:${phase}:${submission.timeline.length}:${docs.length}`;
+  const [drafts, setDrafts] = useState<SessionDrafts>(() =>
+    buildSessionEditorDrafts(
+      submission.id,
+      phase,
+      submission.timeline.length,
+      docs,
+      editableDocNumbers,
+      editableSet,
+    ));
+	const [errors, setErrors] = useState<Record<number, boolean>>({});
+	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+	const [isDraftConfirmOpen, setIsDraftConfirmOpen] = useState(false);
+	const [pendingDecisions, setPendingDecisions] = useState<SessionDecisionInput[] | null>(null);
+  const draftResetKeyRef = useRef(initialDraftResetKey);
 
   useEffect(() => {
     const nextDraftResetKey = `${submission.id}:${phase}:${submission.timeline.length}:${docs.length}`;
     if (draftResetKeyRef.current === nextDraftResetKey) return;
     draftResetKeyRef.current = nextDraftResetKey;
 
-    const initialDrafts = buildInitialSessionDrafts(docs, editableSet);
-    const storedDrafts = readStoredSessionDrafts(submission.id, phase, submission.timeline.length, docs.length);
-
-    if (storedDrafts) {
-      editableDocNumbers.forEach((docNumber) => {
-        const index = docNumber - 1;
-        const storedDraft = storedDrafts[index];
-        if (storedDraft) initialDrafts[index] = storedDraft;
-      });
-    }
-
-    setDrafts(initialDrafts);
+    setDrafts(
+      buildSessionEditorDrafts(
+        submission.id,
+        phase,
+        submission.timeline.length,
+        docs,
+        editableDocNumbers,
+        editableSet,
+      ),
+    );
     setErrors({});
   }, [docs, editableDocNumbers, editableSet, phase, submission.id, submission.timeline.length]);
 
