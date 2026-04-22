@@ -1,6 +1,5 @@
 import { count, desc, eq } from "drizzle-orm";
 import { submissionSnapshots } from "../../db/schema.js";
-import { initialSubmissions } from "../../src/data/initialSubmissions.js";
 import type { AdminSubmission } from "../../src/lib/submission-types.js";
 import { ensureSchemaReady, getDb, isDatabaseConfigured } from "./db.js";
 
@@ -26,32 +25,6 @@ const normalizeSubmission = (submission: AdminSubmission): AdminSubmission => ({
   })),
 });
 
-const ensureSeedData = async () => {
-  const db = getDb();
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(submissionSnapshots);
-
-  if (Number(total) > 0) return;
-
-  const seeded = initialSubmissions.map((submission) => normalizeSubmission(submission));
-  await db.insert(submissionSnapshots).values(
-    seeded.map((submission) => ({
-      id: submission.id,
-      submissionNumber: submission.submissionNumber,
-      submissionType: submission.submissionType,
-      organizationName: submission.organizationName,
-      nib: submission.nib,
-      kbli: submission.kbli,
-      ossStatus: submission.ossStatus,
-      licenseIssued: submission.licenseIssued,
-      licenseStatus: submission.licenseStatus || "",
-      lastUpdatedLabel: submission.lastUpdated,
-      payload: submission,
-    })),
-  );
-};
-
 export const assertDatabaseConfigured = () => {
   if (!isDatabaseConfigured()) {
     throw new Error("DATABASE_URL belum dikonfigurasi.");
@@ -61,7 +34,6 @@ export const assertDatabaseConfigured = () => {
 export const listSubmissions = async (): Promise<AdminSubmission[]> => {
   assertDatabaseConfigured();
   await ensureSchemaReady();
-  await ensureSeedData();
 
   const db = getDb();
   const rows = await db
@@ -75,7 +47,6 @@ export const listSubmissions = async (): Promise<AdminSubmission[]> => {
 export const getSubmissionById = async (id: string): Promise<AdminSubmission | null> => {
   assertDatabaseConfigured();
   await ensureSchemaReady();
-  await ensureSeedData();
 
   const db = getDb();
   const rows = await db

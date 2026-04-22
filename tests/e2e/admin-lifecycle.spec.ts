@@ -104,7 +104,9 @@ test("admin can complete a full lifecycle from submission to issued license", as
   await waitForStageHeading(page, /^izin terbit$/i);
 
   await page.getByRole("combobox").selectOption("Aktif");
+  await expect(page.getByRole("combobox")).toHaveValue("Aktif");
   await page.getByRole("button", { name: /simpan izin terbit/i }).click();
+  await expect(page.getByRole("heading", { name: /simpan izin terbit/i })).toBeVisible();
   await page.getByRole("button", { name: /ya, simpan izin/i }).click();
 
   await expect(page.locator("main")).toContainText(pbUmkuNumber, { timeout: 15000 });

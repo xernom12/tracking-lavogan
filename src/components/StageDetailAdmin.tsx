@@ -1433,9 +1433,11 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<LicenseIssuanceInput | null>(null);
+  const licenseStatusRef = useRef<LicenseStatus | "">(submission.licenseStatus || "");
 
   useEffect(() => {
     setLicenseStatus(submission.licenseStatus || "");
+    licenseStatusRef.current = submission.licenseStatus || "";
     setError("");
     setPendingStatus(null);
     setIsConfirmDialogOpen(false);
@@ -1455,18 +1457,20 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
   };
 
   const prepareIssueLicense = () => {
+    const nextLicenseStatus = licenseStatusRef.current;
+
     if (!isApprovalDraftReady) {
       setError(getApprovalDraftErrorMessage());
       return;
     }
 
-    if (!isLicenseStatus(licenseStatus)) {
+    if (!isLicenseStatus(nextLicenseStatus)) {
       setError("Status izin wajib dipilih.");
       return;
     }
 
     setError("");
-    setPendingStatus({ status: licenseStatus });
+    setPendingStatus({ status: nextLicenseStatus });
     setIsConfirmDialogOpen(true);
   };
 
@@ -1524,7 +1528,9 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
           <select
             value={licenseStatus}
             onChange={(e) => {
-              setLicenseStatus(isLicenseStatus(e.target.value) ? e.target.value : "");
+              const nextLicenseStatus = isLicenseStatus(e.target.value) ? e.target.value : "";
+              licenseStatusRef.current = nextLicenseStatus;
+              setLicenseStatus(nextLicenseStatus);
               setError("");
             }}
             className={`app-form-select ${!licenseStatus ? "text-muted-foreground" : "text-foreground"} ${error ? "app-form-field-error" : ""}`}

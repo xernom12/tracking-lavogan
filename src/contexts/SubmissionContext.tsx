@@ -58,7 +58,7 @@ const mergeUpdatedSubmission = (
 
 export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
   const [submissions, setSubmissions] = useState<AdminSubmission[]>(() =>
-    remoteModeEnabled ? initialSubmissions : readStoredSubmissions(),
+    remoteModeEnabled ? [] : readStoredSubmissions(),
   );
   const remoteSyncInFlightRef = useRef(false);
   const submissionsRef = useRef(submissions);

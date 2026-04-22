@@ -851,6 +851,65 @@ describe("session flow", () => {
     });
   });
 
+  it("opens izin terbit confirmation even when status is saved and submitted immediately", async () => {
+    const readySubmission: AdminSubmission = {
+      id: "izin-terbit-ready",
+      submissionNumber: "I-READY-202604220001",
+      submissionType: "Baru",
+      organizationName: "LPK Siap Terbit",
+      nib: "1234567890123",
+      kbli: "78425",
+      ossStatus: "Izin Terbit",
+      lastUpdated: "22 April 2026",
+      pengajuanConfirmed: true,
+      verificationCompleted: true,
+      pengajuanDate: "20 April 2026",
+      documents: Array.from({ length: 8 }, (_, index) => ({
+        name: `Dokumen ${index + 1}`,
+        status: "approved" as const,
+      })),
+      reviewNotes: "Seluruh dokumen dinyatakan sesuai.",
+      reviewCompleted: true,
+      approvalCompleted: true,
+      approvalDate: "22 April 2026",
+      licenseIssued: false,
+      licenseStatus: "",
+      licenseNumber: "PB-UMKU-READY-001",
+      licenseDate: "",
+      skFileName: "SK-PB-UMKU-READY-001.pdf",
+      skFileSizeBytes: 1024,
+      skFileUrl: "https://example.com/sk-pb-umku-ready-001.pdf",
+      reviewCycle: 1,
+      reviewDocuments: Array.from({ length: 8 }, (_, index) => ({
+        name: `Dokumen ${index + 1}`,
+        status: "approved" as const,
+      })),
+      verificationWorklistDocNumbers: [],
+      timeline: [],
+    };
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SubmissionProvider>
+          <StageDetailAdmin
+            submission={readySubmission}
+            stageIndex={4}
+            stages={deriveStages(readySubmission)}
+          />
+        </SubmissionProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "Aktif" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Izin Terbit" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Simpan Izin Terbit?" })).toBeInTheDocument();
+    });
+  });
+
   it("keeps previous revision marker visible while current session decision changes and expands only the latest session by default", async () => {
     const StageHarness = () => {
       const { getSubmission, confirmPengajuan, submitVerificationSession } = useSubmissions();
