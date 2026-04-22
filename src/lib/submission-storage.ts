@@ -4,11 +4,11 @@ import type {
   DocumentStatus,
   DocumentUploadEntry,
   SubmissionData,
-} from "@/data/mockData";
-import { ensureWibTime, ensureWibTimestamp } from "@/data/mockData";
-import { DOCUMENT_NAMES, buildReviewDocuments } from "@/data/submissionDocuments";
-import { normalizeKbliCode } from "@/data/kbliOptions";
-import { normalizeLicenseStatus, normalizeSubmissionType } from "@/lib/submission-domain";
+} from "../data/mockData.js";
+import { ensureWibTime, ensureWibTimestamp } from "../data/mockData.js";
+import { DOCUMENT_NAMES, buildReviewDocuments } from "../data/submissionDocuments.js";
+import { normalizeKbliCode } from "../data/kbliOptions.js";
+import { normalizeLicenseStatus, normalizeSubmissionType } from "./submission-domain.js";
 
 export type StoredSubmission = SubmissionData & { id: string };
 
@@ -54,6 +54,8 @@ const normalizeDocumentUploads = (uploads: Document["uploads"]): DocumentUploadE
       date: entry.date?.trim() || "-",
       time: ensureWibTime(entry.time || "-"),
       phase: (entry.phase === "PENINJAUAN" ? "PENINJAUAN" : "VERIFIKASI") as "VERIFIKASI" | "PENINJAUAN",
+      fileUrl: entry.fileUrl?.trim() || "",
+      blobPath: entry.blobPath?.trim() || "",
     }))
     .filter((entry) => entry.fileName);
 };
@@ -189,6 +191,8 @@ const normalizeSubmissionDocuments = <T extends StoredSubmission>(submission: T)
   skFileSizeBytes: Number.isFinite(submission.skFileSizeBytes) && submission.skFileSizeBytes > 0
     ? submission.skFileSizeBytes
     : 0,
+  skFileUrl: submission.skFileUrl?.trim() || "",
+  skBlobPath: submission.skBlobPath?.trim() || "",
   verificationCompleted: inferVerificationCompleted(submission),
   reviewCycle: Number.isInteger(submission.reviewCycle) && submission.reviewCycle > 0 ? submission.reviewCycle : 1,
   reviewDocuments: normalizeReviewDocuments(submission.reviewDocuments, submission.lastUpdated),
@@ -235,6 +239,8 @@ export const loadStoredSubmissions = <T extends StoredSubmission>(
       skFileSizeBytes: Number.isFinite(item.skFileSizeBytes) && item.skFileSizeBytes > 0
         ? item.skFileSizeBytes
         : 0,
+      skFileUrl: item.skFileUrl?.trim() || "",
+      skBlobPath: item.skBlobPath?.trim() || "",
       reviewDocuments: normalizeReviewDocuments(item.reviewDocuments, item.lastUpdated),
       verificationWorklistDocNumbers: normalizeWorklist(item.verificationWorklistDocNumbers),
       lastRevisionCarryover: item.lastRevisionCarryover && Array.isArray(item.lastRevisionCarryover.worklistDocNumbers)

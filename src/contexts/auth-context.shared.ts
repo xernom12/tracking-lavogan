@@ -3,7 +3,8 @@ import { createContext } from "react";
 export interface AuthContextType {
   isLoggedIn: boolean;
   adminEmail: string;
-  login: (email: string, password: string) => boolean;
+  isCheckingSession: boolean;
+  login: (email: string, password: string) => boolean | Promise<boolean>;
   logout: () => void;
 }
 

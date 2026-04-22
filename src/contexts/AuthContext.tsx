@@ -1,8 +1,11 @@
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "@/contexts/auth-context.shared";
+import { AUTH_TOKEN_STORAGE_KEY, buildApiUrl, isRemoteStorageEnabled } from "@/lib/submission-env";
 
 const AUTH_STORAGE_KEY = "tracking-os-auth";
 const AUTH_USER_STORAGE_KEY = "tracking-os-auth-user";
+
+const remoteModeEnabled = isRemoteStorageEnabled();
 
 const getInitialAuthState = () => {
   if (typeof window === "undefined") {
@@ -20,19 +23,53 @@ const getInitialAuthState = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [{ isLoggedIn, adminEmail }, setAuthState] = useState(getInitialAuthState);
+  const [isCheckingSession, setIsCheckingSession] = useState(remoteModeEnabled);
 
-  const login = (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail || !password.trim()) return false;
 
-    setAuthState({
-      isLoggedIn: true,
-      adminEmail: normalizedEmail,
-    });
-    return true;
+    if (!remoteModeEnabled) {
+      setAuthState({
+        isLoggedIn: true,
+        adminEmail: normalizedEmail,
+      });
+      return true;
+    }
+
+    try {
+      const response = await fetch(buildApiUrl("/api/auth/login"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.token) {
+        return false;
+      }
+
+      window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, payload.token);
+      setAuthState({
+        isLoggedIn: true,
+        adminEmail: payload.email || normalizedEmail,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const logout = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    }
+
     setAuthState({
       isLoggedIn: false,
       adminEmail: "",
@@ -46,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
-  }, [adminEmail, isLoggedIn]);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -57,8 +94,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
   }, [adminEmail]);
 
+  useEffect(() => {
+    if (!remoteModeEnabled || typeof window === "undefined") {
+      setIsCheckingSession(false);
+      return;
+    }
+
+    const token = window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+    if (!token) {
+      setIsCheckingSession(false);
+      return;
+    }
+
+    let isMounted = true;
+    const verifySession = async () => {
+      try {
+        const response = await fetch(buildApiUrl("/api/auth/me"), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!isMounted) return;
+        if (!response.ok || !payload?.email) {
+          window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+          setAuthState({
+            isLoggedIn: false,
+            adminEmail: "",
+          });
+          return;
+        }
+
+        setAuthState({
+          isLoggedIn: true,
+          adminEmail: payload.email,
+        });
+      } finally {
+        if (isMounted) {
+          setIsCheckingSession(false);
+        }
+      }
+    };
+
+    void verifySession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, adminEmail, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, adminEmail, isCheckingSession, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

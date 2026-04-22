@@ -31,6 +31,8 @@ npm run test
 npm run build
 ```
 
+Untuk mode full-stack yang memakai API Vercel Functions, jalankan aplikasi melalui `vercel dev` setelah env backend lengkap.
+
 ## Arsitektur Singkat
 
 ### Routing
@@ -43,9 +45,18 @@ npm run build
 ### State dan penyimpanan
 
 - `src/contexts/AuthContext.tsx`
-  Menyimpan status login admin di `localStorage`.
+  Menyimpan status login admin di `localStorage`. Jika mode backend aktif, login diverifikasi ke API dan token admin disimpan di browser.
 - `src/contexts/SubmissionContext.tsx`
-  Menyimpan seluruh data permohonan, timeline, riwayat dokumen, unggahan revisi, dan transisi workflow di `localStorage`.
+  Menyimpan seluruh data permohonan, timeline, riwayat dokumen, unggahan revisi, dan transisi workflow di `localStorage` untuk mode lokal, atau sinkron ke API + PostgreSQL untuk mode remote/Vercel.
+
+### Backend testing
+
+- `api/`
+  Berisi Vercel Functions untuk auth admin, upload PDF, dan CRUD/action submission.
+- `db/schema.ts`
+  Skema PostgreSQL yang dipakai backend testing.
+- `vercel.json`
+  Rewrite SPA dan konfigurasi runtime fungsi serverless.
 
 ### Halaman utama
 
@@ -99,14 +110,14 @@ Yang sudah baik:
 
 - Alur bisnis frontend sudah cukup lengkap.
 - State persist antar refresh/tab dengan `localStorage`.
+- Sudah ada backend testing berbasis Vercel Functions + PostgreSQL + Blob.
 - Build produksi berhasil.
 - Test flow utama sudah tersedia.
 
 Batasan saat ini:
 
-- Belum ada backend/API nyata.
-- Login admin masih placeholder frontend dan belum memakai autentikasi riil.
-- File yang diunduh/di-preview masih simulasi metadata.
+- Auth admin masih minimum untuk environment testing dan masih berbasis env statis, belum role management penuh.
+- Public portal masih memakai data context frontend yang ditarik dari endpoint yang sama, jadi pemisahan akses publik vs admin belum final.
 - Lint masih menyisakan beberapa warning `react-refresh` pada file utilitas/shadcn bawaan.
 
 ## Pengembangan Terbaru
@@ -121,8 +132,19 @@ Perubahan terakhir yang sudah diterapkan:
 
 ## Prioritas Lanjutan yang Disarankan
 
-- Integrasi backend untuk auth, persistence, dan file storage
-- Validasi role/credential admin yang sebenarnya
-- Refactor domain workflow agar logika context lebih modular
+- Pisahkan endpoint/public payload agar portal publik tidak membawa data admin yang tidak diperlukan
+- Ganti auth testing menjadi auth production-ready dengan session/cookie httpOnly dan role admin riil
+- Tambah migrasi Drizzle yang formal dan seed command terpisah
 - Rapikan warning lint bawaan shadcn/context export
 - Tambah test integrasi untuk routing dan error states
+
+## Env Testing di Vercel
+
+Salin `.env.example`, lalu isi minimal:
+
+- `VITE_ENABLE_REMOTE_STORAGE=true`
+- `DATABASE_URL`
+- `BLOB_READ_WRITE_TOKEN`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_SECRET`

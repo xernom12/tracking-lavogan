@@ -29,6 +29,8 @@ export interface DocumentUploadEntry {
   date: string;
   time: string;
   phase: DocumentUploadPhase;
+  fileUrl?: string;
+  blobPath?: string;
 }
 
 export interface Document {
@@ -87,6 +89,8 @@ export interface SubmissionData {
   licenseDate: string;
   skFileName: string;
   skFileSizeBytes: number;
+  skFileUrl?: string;
+  skBlobPath?: string;
   reviewCycle: number;
   reviewDocuments: Document[];
   verificationWorklistDocNumbers: number[];

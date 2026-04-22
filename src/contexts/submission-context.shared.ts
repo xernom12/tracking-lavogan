@@ -7,7 +7,7 @@ import type {
   NewSubmissionInput,
   RevisionUploadInput,
   SessionDecisionInput,
-} from "@/contexts/SubmissionContext";
+} from "@/lib/submission-types";
 
 export interface SubmissionContextType {
   submissions: AdminSubmission[];

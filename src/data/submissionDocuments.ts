@@ -1,4 +1,4 @@
-import type { Document, DocumentStatus } from "@/data/mockData";
+import type { Document, DocumentStatus } from "./mockData.js";
 
 export const DOCUMENT_NAMES = [
   "Surat Permohonan Izin",

@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
-import { buildTextDownloadHref, formatBytes } from "@/lib/file-preview";
 
 type SortOption = "terbaru" | "terlama";
 
@@ -146,24 +145,25 @@ const PublishedTable = () => {
                                             <div className="font-medium text-slate-800 text-[14px]">{s.licenseDate || "-"}</div>
                                         </td>
                                         <td className="px-5 sm:px-6 py-4 align-middle text-center">
-                                            {s.skFileName ? (
+                                            {s.skFileName && s.skFileUrl ? (
                                                 <a
-                                                    href={buildTextDownloadHref([
-                                                        "Simulasi Izin PB UMKU",
-                                                        `Nomor Izin PB UMKU: ${s.licenseNumber || "-"}`,
-                                                        `Tanggal Terbit: ${s.licenseDate || "-"}`,
-                                                        `Nama File: ${s.skFileName}`,
-                                                        `Ukuran File: ${formatBytes(s.skFileSizeBytes)}`,
-                                                        "",
-                                                        "Catatan: Ini adalah simulasi unduhan karena integrasi database/file storage belum tersedia.",
-                                                    ])}
+                                                    href={s.skFileUrl}
                                                     download={s.skFileName}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
                                                     title={`Unduh dokumen ${s.skFileName}`}
                                                     aria-label={`Unduh dokumen ${s.skFileName}`}
                                                 >
                                                     <FileText className="w-4 h-4 stroke-[2]" />
                                                 </a>
+                                            ) : s.skFileName ? (
+                                                <span
+                                                    className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700"
+                                                    title="File izin belum tersedia untuk diunduh"
+                                                >
+                                                    Belum tersedia
+                                                </span>
                                             ) : (
                                                 <span className="text-slate-400 text-xs font-medium">-</span>
                                             )}

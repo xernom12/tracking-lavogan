@@ -26,6 +26,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import FlowConfirmDialog from "@/components/FlowConfirmDialog";
 import {
   buildMetadataPreviewHref,
+  downloadFileFromHref,
   formatBytes,
   openPreviewWindow,
 } from "@/lib/file-preview";
@@ -387,7 +388,11 @@ const RevisionUploadPanel = ({
   const { uploadRevisionDocument } = useSubmissions();
   const latestUpload = getLatestDocumentUpload(doc, phase);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [pendingUpload, setPendingUpload] = useState<{ fileName: string; fileSizeBytes: number } | null>(null);
+  const [pendingUpload, setPendingUpload] = useState<{
+    fileName: string;
+    fileSizeBytes: number;
+    file: File;
+  } | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -409,6 +414,7 @@ const RevisionUploadPanel = ({
     setPendingUpload({
       fileName: file.name,
       fileSizeBytes: file.size,
+      file,
     });
     setIsConfirmDialogOpen(true);
   };
@@ -451,6 +457,26 @@ const RevisionUploadPanel = ({
           <p className="text-[11.5px] text-slate-500 mt-1">
             Diupload pada {latestUpload.date}, {latestUpload.time}
           </p>
+          {latestUpload.fileUrl ? (
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => downloadFileFromHref(latestUpload.fileUrl || "", latestUpload.fileName)}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Unduh
+              </button>
+              <button
+                type="button"
+                onClick={() => openPreviewWindow(latestUpload.fileUrl || "")}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                Lihat
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -661,7 +687,8 @@ const PersetujuanDetail = ({ submission, completed }: { submission: AdminSubmiss
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
               statusLabel="Terupload"
-              onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
+              fileUrl={submission.skFileUrl}
+              onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
                 fileName: submission.skFileName,
                 fileSizeBytes: submission.skFileSizeBytes,
@@ -696,7 +723,8 @@ const IzinTerbitDetail = ({ submission, completed }: { submission: AdminSubmissi
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
               statusLabel="Terupload"
-              onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
+              fileUrl={submission.skFileUrl}
+              onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
                 fileName: submission.skFileName,
                 fileSizeBytes: submission.skFileSizeBytes,
@@ -723,7 +751,8 @@ const IzinTerbitDetail = ({ submission, completed }: { submission: AdminSubmissi
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
               statusLabel="Terupload"
-              onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
+              fileUrl={submission.skFileUrl}
+              onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
                 fileName: submission.skFileName,
                 fileSizeBytes: submission.skFileSizeBytes,
@@ -755,11 +784,13 @@ const UserFileAttachmentCard = ({
   fileName,
   fileSizeBytes,
   statusLabel,
+  fileUrl,
   onPreview,
 }: {
   fileName: string;
   fileSizeBytes: number;
   statusLabel: string;
+  fileUrl?: string;
   onPreview?: () => void;
 }) => (
   <div className="app-file-card flex items-start gap-3 sm:items-center sm:gap-4">
@@ -784,8 +815,11 @@ const UserFileAttachmentCard = ({
       <button
         type="button"
         onClick={() => {
+          if (fileUrl) {
+            downloadFileFromHref(fileUrl, fileName);
+            return;
+          }
           toast.success(`Proses unduh ${fileName} dimulai.`);
-          // Simulasi unduhan untuk percontohan
           setTimeout(() => toast.info("Proses unduh dokumen telah selesai."), 1500);
         }}
         aria-label={`Unduh dokumen ${fileName}`}

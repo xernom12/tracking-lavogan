@@ -46,3 +46,16 @@ export const openPreviewWindow = (href: string) => {
   if (!href || typeof window === "undefined") return;
   window.open(href, "_blank", "noopener,noreferrer");
 };
+
+export const downloadFileFromHref = (href: string, fileName?: string) => {
+  if (!href || typeof window === "undefined") return;
+
+  const anchor = window.document.createElement("a");
+  anchor.href = href;
+  if (fileName) {
+    anchor.download = fileName;
+  }
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+  anchor.click();
+};

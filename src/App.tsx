@@ -16,7 +16,8 @@ const AdminKelola = lazy(() => import("./pages/AdminKelola"));
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isCheckingSession } = useAuth();
+  if (isCheckingSession) return <AppRouteFallback />;
   if (!isLoggedIn) return <Navigate to="/admin/login" replace />;
   return <>{children}</>;
 };

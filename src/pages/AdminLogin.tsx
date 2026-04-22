@@ -10,12 +10,13 @@ const AdminLogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    const isSuccess = await login(email, password);
+    if (isSuccess) {
       navigate("/admin");
     } else {
-      setError("Email dan password wajib diisi.");
+      setError("Email atau password admin tidak valid.");
     }
   };
 
@@ -83,9 +84,10 @@ const AdminLogin = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-slate-700 tracking-wide">Email</label>
+                <label htmlFor="admin-email" className="block text-sm font-bold text-slate-700 tracking-wide">Email</label>
                 <div className="relative">
                   <input
+                    id="admin-email"
                     type="email"
                     value={email}
                     onChange={(e) => {
@@ -98,9 +100,10 @@ const AdminLogin = () => {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-slate-700 tracking-wide">Password</label>
+                <label htmlFor="admin-password" className="block text-sm font-bold text-slate-700 tracking-wide">Password</label>
                 <div className="relative">
                   <input
+                    id="admin-password"
                     type="password"
                     value={password}
                     onChange={(e) => {

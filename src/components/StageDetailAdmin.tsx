@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import FlowConfirmDialog from "@/components/FlowConfirmDialog";
 import {
   buildMetadataPreviewHref,
+  downloadFileFromHref,
   formatBytes,
   openPreviewWindow,
 } from "@/lib/file-preview";
@@ -421,21 +422,22 @@ const StageDetailAdmin = ({ submission, stageIndex, stages }: StageDetailAdminPr
                 <p className="app-info-label text-muted-foreground">
                   Izin PB UMKU
                 </p>
-                {submission.skFileName ? (
-                  <FileAttachmentCard
-                    fileName={submission.skFileName}
-                    fileSizeBytes={submission.skFileSizeBytes}
-                    statusLabel="Terupload"
-                    onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
-                      title: "Pratinjau Izin PB UMKU",
-                      fileName: submission.skFileName,
-                      fileSizeBytes: submission.skFileSizeBytes,
-                      extraLines: [
-                        `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
-                        `Tanggal Persetujuan: ${submission.approvalDate || "-"}`,
-                      ],
-                    }))}
-                  />
+	                {submission.skFileName ? (
+	                  <FileAttachmentCard
+	                    fileName={submission.skFileName}
+	                    fileSizeBytes={submission.skFileSizeBytes}
+	                    statusLabel="Terupload"
+	                    fileUrl={submission.skFileUrl}
+	                    onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
+	                      title: "Pratinjau Izin PB UMKU",
+	                      fileName: submission.skFileName,
+	                      fileSizeBytes: submission.skFileSizeBytes,
+	                      extraLines: [
+	                        `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
+	                        `Tanggal Persetujuan: ${submission.approvalDate || "-"}`,
+	                      ],
+	                    }))}
+	                  />
                 ) : (
                   <EmptyFileState />
                 )}
@@ -1140,7 +1142,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
     () => (selectedFile && typeof URL.createObjectURL === "function" ? URL.createObjectURL(selectedFile) : ""),
     [selectedFile],
   );
-  const currentPreviewHref = selectedFilePreviewUrl || (
+  const currentPreviewHref = selectedFilePreviewUrl || submission.skFileUrl || (
     currentFileName
       ? buildMetadataPreviewHref({
         title: "Pratinjau Izin PB UMKU",
@@ -1149,7 +1151,6 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
         extraLines: [
           `Tanggal Persetujuan: ${formatDisplayDate(form.approvalDate)}`,
           `Nomor Izin PB UMKU: ${form.pbUmkuNumber.trim() || "-"}`,
-          "Catatan: Ini adalah simulasi preview karena file disimpan sebagai metadata di frontend.",
         ],
       })
       : ""
@@ -1248,6 +1249,9 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
       pbUmkuNumber: normalizePbUmkuNumber(form.pbUmkuNumber),
       skFileName: selectedFile?.name || form.skFileName || "",
       skFileSizeBytes: selectedFile?.size || form.skFileSizeBytes || 0,
+      skFileUrl: submission.skFileUrl || "",
+      skBlobPath: submission.skBlobPath || "",
+      file: selectedFile,
     };
 
     setPendingPayload(payload);
@@ -1450,21 +1454,22 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
             <p className="app-info-label text-muted-foreground">
               Izin PB UMKU
             </p>
-            <FileAttachmentCard
-              fileName={submission.skFileName}
-              fileSizeBytes={submission.skFileSizeBytes}
-              statusLabel="Terupload"
-              onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
-                title: "Pratinjau Izin PB UMKU",
-                fileName: submission.skFileName,
-                fileSizeBytes: submission.skFileSizeBytes,
-                extraLines: [
-                  `Tanggal Persetujuan: ${submission.approvalDate || "-"}`,
-                  `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
-                  "Status Izin: Menunggu Penetapan",
-                ],
-              }))}
-            />
+	            <FileAttachmentCard
+	              fileName={submission.skFileName}
+	              fileSizeBytes={submission.skFileSizeBytes}
+	              statusLabel="Terupload"
+	              fileUrl={submission.skFileUrl}
+	              onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
+	                title: "Pratinjau Izin PB UMKU",
+	                fileName: submission.skFileName,
+	                fileSizeBytes: submission.skFileSizeBytes,
+	                extraLines: [
+	                  `Tanggal Persetujuan: ${submission.approvalDate || "-"}`,
+	                  `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
+	                  "Status Izin: Menunggu Penetapan",
+	                ],
+	              }))}
+	            />
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -1530,21 +1535,22 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
           <p className="app-info-label text-muted-foreground">
             Izin PB UMKU
           </p>
-          <FileAttachmentCard
-            fileName={submission.skFileName}
-            fileSizeBytes={submission.skFileSizeBytes}
-            statusLabel="Terupload"
-            onPreview={() => openPreviewWindow(buildMetadataPreviewHref({
-              title: "Pratinjau Izin PB UMKU",
-              fileName: submission.skFileName,
-              fileSizeBytes: submission.skFileSizeBytes,
-              extraLines: [
-                `Tanggal Terbit: ${submission.licenseDate || "-"}`,
-                `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
-                `Status Izin: ${submission.licenseStatus || "-"}`,
-              ],
-            }))}
-          />
+	          <FileAttachmentCard
+	            fileName={submission.skFileName}
+	            fileSizeBytes={submission.skFileSizeBytes}
+	            statusLabel="Terupload"
+	            fileUrl={submission.skFileUrl}
+	            onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
+	              title: "Pratinjau Izin PB UMKU",
+	              fileName: submission.skFileName,
+	              fileSizeBytes: submission.skFileSizeBytes,
+	              extraLines: [
+	                `Tanggal Terbit: ${submission.licenseDate || "-"}`,
+	                `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
+	                `Status Izin: ${submission.licenseStatus || "-"}`,
+	              ],
+	            }))}
+	          />
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -1613,12 +1619,14 @@ const FileAttachmentCard = ({
   fileName,
   fileSizeBytes,
   statusLabel,
+  fileUrl,
   onPreview,
   onRemove,
 }: {
   fileName: string;
   fileSizeBytes: number;
   statusLabel: string;
+  fileUrl?: string;
   onPreview?: () => void;
   onRemove?: () => void;
 }) => (
@@ -1644,8 +1652,11 @@ const FileAttachmentCard = ({
       <button
         type="button"
         onClick={() => {
+          if (fileUrl) {
+            downloadFileFromHref(fileUrl, fileName);
+            return;
+          }
           toast.success(`Proses unduh ${fileName} dimulai.`);
-          // Simulasi unduhan (dalam real scenario gunakan a href & download attr atau FileSaver)
           setTimeout(() => toast.info("Proses unduh dokumen telah selesai."), 1500);
         }}
         aria-label={`Unduh dokumen ${fileName}`}

@@ -4,11 +4,11 @@ import type {
   SessionEntry,
   TimelineEvent,
   WorkflowPhase,
-} from "@/data/mockData";
+} from "../data/mockData.js";
 import {
   formatDecisionDescription,
   formatSessionSummaryDescription,
-} from "@/lib/submission-domain";
+} from "./submission-domain.js";
 
 export interface SessionDecisionValidationOptions {
   requireRevisionNote: boolean;

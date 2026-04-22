@@ -1,4 +1,4 @@
-import type { DecisionStatus, LicenseStatus, SubmissionData, SubmissionType } from "@/data/mockData";
+import type { DecisionStatus, LicenseStatus, SubmissionData, SubmissionType } from "../data/mockData.js";
 
 const DEFAULT_SUBMISSION_TYPE: SubmissionType = "Baru";
 

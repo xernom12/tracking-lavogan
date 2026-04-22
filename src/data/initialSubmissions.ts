@@ -1,9 +1,9 @@
-import type { SubmissionData } from "@/data/mockData";
-import { buildReviewDocuments } from "@/data/submissionDocuments";
+import type { SubmissionData } from "./mockData.js";
+import { buildReviewDocuments } from "./submissionDocuments.js";
 import {
   formatDecisionDescription,
   formatSessionSummaryDescription,
-} from "@/lib/submission-domain";
+} from "../lib/submission-domain.js";
 
 export type SeedSubmission = SubmissionData & { id: string };
 
