@@ -712,10 +712,11 @@ const AdminDashboard = () => {
           </DialogHeader>
           <div className="max-h-[min(62vh,34rem)] space-y-3.5 overflow-y-auto py-1 pr-1">
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-date" className={dialogLabelClassName}>
                 Tanggal pengajuan <span className="text-status-revision">*</span>
               </label>
               <input
+                id="new-submission-date"
                 type="date"
                 max={new Date().toLocaleDateString('en-CA')}
                 value={form.pengajuanDate}
@@ -734,10 +735,11 @@ const AdminDashboard = () => {
               )}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-number" className={dialogLabelClassName}>
                 Nomor permohonan <span className="text-status-revision">*</span>
               </label>
               <input
+                id="new-submission-number"
                 type="text"
                 value={form.submissionNumber}
                 onChange={(e) => {
@@ -752,10 +754,11 @@ const AdminDashboard = () => {
               )}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-organization" className={dialogLabelClassName}>
                 Nama perusahaan/LPK <span className="text-status-revision">*</span>
               </label>
               <input
+                id="new-submission-organization"
                 type="text"
                 value={form.organizationName}
                 onChange={(e) => {
@@ -770,10 +773,11 @@ const AdminDashboard = () => {
               )}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-nib" className={dialogLabelClassName}>
                 NIB <span className="text-status-revision">*</span>
               </label>
               <input
+                id="new-submission-nib"
                 type="text"
                 value={form.nib}
                 onChange={(e) => {
@@ -788,10 +792,11 @@ const AdminDashboard = () => {
               )}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-kbli" className={dialogLabelClassName}>
                 KBLI <span className="text-status-revision">*</span>
               </label>
               <select
+                id="new-submission-kbli"
                 value={form.kbli}
                 onChange={(e) => {
                   setForm((f) => ({ ...f, kbli: e.target.value }));
@@ -811,10 +816,11 @@ const AdminDashboard = () => {
               )}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="new-submission-type" className={dialogLabelClassName}>
                 Jenis permohonan <span className="text-status-revision">*</span>
               </label>
               <select
+                id="new-submission-type"
                 value={form.submissionType}
                 onChange={(e) => {
                   const nextSubmissionType = e.target.value;

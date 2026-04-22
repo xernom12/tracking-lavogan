@@ -642,10 +642,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
           </DialogHeader>
           <div className="space-y-4 py-1">
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-date" className={dialogLabelClassName}>
                 Tanggal pengajuan <span className="text-status-revision">*</span>
               </label>
               <input
+                id="edit-submission-date"
                 type="date"
                 max={new Date().toLocaleDateString('en-CA')} // 'en-CA' gives YYYY-MM-DD
                 value={form.pengajuanDate}
@@ -665,10 +666,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               ) : null}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-number" className={dialogLabelClassName}>
                 Nomor permohonan <span className="text-status-revision">*</span>
               </label>
               <input
+                id="edit-submission-number"
                 type="text"
                 value={form.submissionNumber}
                 onChange={(e) => {
@@ -683,10 +685,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               ) : null}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-organization" className={dialogLabelClassName}>
                 Nama perusahaan/LPK <span className="text-status-revision">*</span>
               </label>
               <input
+                id="edit-submission-organization"
                 type="text"
                 value={form.organizationName}
                 onChange={(e) => {
@@ -701,10 +704,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               ) : null}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-nib" className={dialogLabelClassName}>
                 NIB <span className="text-status-revision">*</span>
               </label>
               <input
+                id="edit-submission-nib"
                 type="text"
                 value={form.nib}
                 onChange={(e) => {
@@ -719,10 +723,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               ) : null}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-kbli" className={dialogLabelClassName}>
                 KBLI <span className="text-status-revision">*</span>
               </label>
               <select
+                id="edit-submission-kbli"
                 value={form.kbli}
                 onChange={(e) => {
                   setForm((prev) => ({ ...prev, kbli: e.target.value }));
@@ -742,10 +747,11 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               ) : null}
             </div>
             <div className={dialogFieldGroupClassName}>
-              <label className={dialogLabelClassName}>
+              <label htmlFor="edit-submission-type" className={dialogLabelClassName}>
                 Jenis permohonan <span className="text-status-revision">*</span>
               </label>
               <select
+                id="edit-submission-type"
                 value={form.submissionType}
                 onChange={(e) => {
                   const nextSubmissionType = e.target.value;
@@ -860,10 +866,11 @@ const SessionEditor = ({
   requireRevisionNote: boolean;
 }) => {
   const [drafts, setDrafts] = useState<SessionDrafts>({});
-  const [errors, setErrors] = useState<Record<number, boolean>>({});
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isDraftConfirmOpen, setIsDraftConfirmOpen] = useState(false);
-  const [pendingDecisions, setPendingDecisions] = useState<SessionDecisionInput[] | null>(null);
+	const [errors, setErrors] = useState<Record<number, boolean>>({});
+	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+	const [isDraftConfirmOpen, setIsDraftConfirmOpen] = useState(false);
+	const [pendingDecisions, setPendingDecisions] = useState<SessionDecisionInput[] | null>(null);
+  const draftResetKeyRef = useRef("");
 
   const editableDocNumbers = useMemo(
     () => docs.map((_, index) => index + 1),
@@ -872,6 +879,10 @@ const SessionEditor = ({
   const editableSet = useMemo(() => new Set(editableDocNumbers), [editableDocNumbers]);
 
   useEffect(() => {
+    const nextDraftResetKey = `${submission.id}:${phase}:${submission.timeline.length}:${docs.length}`;
+    if (draftResetKeyRef.current === nextDraftResetKey) return;
+    draftResetKeyRef.current = nextDraftResetKey;
+
     const initialDrafts = buildInitialSessionDrafts(docs, editableSet);
     const storedDrafts = readStoredSessionDrafts(submission.id, phase, submission.timeline.length, docs.length);
 

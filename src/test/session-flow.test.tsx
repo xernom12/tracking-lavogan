@@ -632,6 +632,70 @@ describe("session flow", () => {
     });
   }, 10000);
 
+  it("preserves unsaved inspection selections when refreshed remote data re-renders the same session", async () => {
+    const StageHarness = ({ refreshVersion }: { refreshVersion: number }) => {
+      const { getSubmission, confirmPengajuan } = useSubmissions();
+      const submission = getSubmission("4");
+
+      useEffect(() => {
+        if (!submission?.pengajuanConfirmed) confirmPengajuan("4");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+
+      const latestSubmission = getSubmission("4");
+      if (!latestSubmission) return null;
+
+      const refreshedSubmission: AdminSubmission = {
+        ...latestSubmission,
+        documents: latestSubmission.documents.map((doc) => ({
+          ...doc,
+          history: doc.history ? [...doc.history] : undefined,
+          uploads: doc.uploads ? [...doc.uploads] : undefined,
+        })),
+        reviewDocuments: latestSubmission.reviewDocuments.map((doc) => ({
+          ...doc,
+          history: doc.history ? [...doc.history] : undefined,
+          uploads: doc.uploads ? [...doc.uploads] : undefined,
+        })),
+        timeline: [...latestSubmission.timeline],
+      };
+
+      return (
+        <div data-refresh-version={refreshVersion}>
+          <StageDetailAdmin
+            submission={refreshedSubmission}
+            stageIndex={1}
+            stages={deriveStages(refreshedSubmission)}
+          />
+        </div>
+      );
+    };
+
+    const { rerender } = render(
+      <SubmissionProvider>
+        <StageHarness refreshVersion={0} />
+      </SubmissionProvider>,
+    );
+
+    const firstDocCard = await screen.findByTestId("session-editor-doc-1");
+    const firstSelect = within(firstDocCard).getByRole("combobox");
+
+    fireEvent.change(firstSelect, {
+      target: { value: "approved" },
+    });
+
+    expect(firstSelect).toHaveValue("approved");
+
+    rerender(
+      <SubmissionProvider>
+        <StageHarness refreshVersion={1} />
+      </SubmissionProvider>,
+    );
+
+    const refreshedFirstDocCard = await screen.findByTestId("session-editor-doc-1");
+    expect(within(refreshedFirstDocCard).getByRole("combobox")).toHaveValue("approved");
+  });
+
   it("shows persetujuan as the next stage label in peninjauan confirmation dialog", async () => {
     const StageHarness = () => {
       const { getSubmission } = useSubmissions();
