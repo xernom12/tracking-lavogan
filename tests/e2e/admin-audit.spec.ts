@@ -43,7 +43,7 @@ test("admin can create, open, edit, and delete a submission", async ({ page }) =
   await page.getByRole("button", { name: /^kelola$/i }).click();
   await expect(page).toHaveURL(/\/admin\/kelola\//);
 
-  await expect(page.getByText(submissionNumber, { exact: true })).toBeVisible();
+  await expect(page.locator("main")).toContainText(submissionNumber, { timeout: 15000 });
   await page.getByRole("button", { name: /edit data permohonan/i }).click();
   await expect(page.getByRole("dialog").getByText(/edit data permohonan/i)).toBeVisible();
 

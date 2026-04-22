@@ -15,12 +15,13 @@ const PublishedTable = lazy(() => import("@/components/PublishedTable"));
 const STAGE_PHASES = ["PENGAJUAN", "VERIFIKASI", "PENINJAUAN", "PERSETUJUAN", "IZIN_TERBIT"] as const;
 
 const Index = () => {
-  const [submission, setSubmission] = useState<AdminSubmission | null>(null);
+  const [trackedSubmissionId, setTrackedSubmissionId] = useState<string | null>(null);
   const [selectedStage, setSelectedStage] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const [resultScrollKey, setResultScrollKey] = useState(0);
   const [searchResetKey, setSearchResetKey] = useState(0);
-  const { findBySubmissionNumber } = useSubmissions();
+  const { findBySubmissionNumber, getSubmission } = useSubmissions();
+  const submission = trackedSubmissionId ? getSubmission(trackedSubmissionId) || null : null;
 
   const handleSearch = async (nextQuery: string) => {
     const normalizedQuery = nextQuery.trim();
@@ -31,11 +32,11 @@ const Index = () => {
     const found = findBySubmissionNumber(normalizedQuery);
 
     if (found) {
-      setSubmission(found);
+      setTrackedSubmissionId(found.id);
       setSelectedStage(getActiveStageIndex(found));
       setResultScrollKey((current) => current + 1);
     } else {
-      setSubmission(null);
+      setTrackedSubmissionId(null);
     }
 
     return !!found;
@@ -75,7 +76,7 @@ const Index = () => {
   };
 
   const handleHomeReset = () => {
-    setSubmission(null);
+    setTrackedSubmissionId(null);
     setSelectedStage(0);
     setIsSearching(false);
     setResultScrollKey(0);

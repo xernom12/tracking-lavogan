@@ -12,9 +12,6 @@ export default async function handler(req, res) {
     return sendError(res, 405, "Metode tidak didukung.");
   }
 
-  const session = requireAdminSession(req, res);
-  if (!session) return;
-
   const id = getId(req);
   if (!id) {
     return sendError(res, 400, "ID submission tidak valid.");
@@ -24,6 +21,10 @@ export default async function handler(req, res) {
   if (!type) {
     return sendError(res, 400, "Tipe aksi wajib diisi.");
   }
+
+  const isPublicAction = String(type) === "uploadRevisionDocument";
+  const session = isPublicAction ? { email: "Pemohon" } : requireAdminSession(req, res);
+  if (!session) return;
 
   try {
     const submissions = await listSubmissions();

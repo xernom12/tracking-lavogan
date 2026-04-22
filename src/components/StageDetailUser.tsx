@@ -315,7 +315,10 @@ const DocumentProcessCard = ({
     && hasUploadedRevisionAfterLatestRequest(submissionTimeline, documentNumber, phase);
 
   return (
-    <div className={`overflow-hidden rounded-[1.25rem] border ${appearance.cardClass} transition-all duration-300`}>
+    <div
+      data-testid={`user-doc-${phase.toLowerCase()}-${documentNumber}`}
+      className={`overflow-hidden rounded-[1.25rem] border ${appearance.cardClass} transition-all duration-300`}
+    >
       <button
         type="button"
         onClick={onToggle}

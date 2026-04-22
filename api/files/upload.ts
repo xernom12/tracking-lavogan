@@ -11,15 +11,17 @@ export default async function handler(req, res) {
     return sendError(res, 405, "Metode tidak didukung.");
   }
 
-  const session = requireAdminSession(req, res);
-  if (!session) return;
-
   const {
     folder = "uploads",
     fileName = "",
     contentType = "application/pdf",
     dataBase64 = "",
   } = readJsonBody(req);
+
+  const normalizedFolder = String(folder).trim() || "uploads";
+  const isPublicRevisionUpload = normalizedFolder.startsWith("revision/");
+  const session = isPublicRevisionUpload ? { email: "Pemohon" } : requireAdminSession(req, res);
+  if (!session) return;
 
   if (!String(fileName).toLowerCase().endsWith(".pdf")) {
     return sendError(res, 400, "File harus berformat PDF.");
@@ -31,7 +33,7 @@ export default async function handler(req, res) {
 
   try {
     const result = await uploadPdfToBlob({
-      folder: String(folder).trim() || "uploads",
+      folder: normalizedFolder,
       fileName: String(fileName),
       contentType: String(contentType || "application/pdf"),
       dataBase64,
