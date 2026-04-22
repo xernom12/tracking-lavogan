@@ -5,6 +5,11 @@ const TOKEN_TTL_MS = 1000 * 60 * 60 * 12;
 
 const getSecret = () => process.env.ADMIN_SESSION_SECRET?.trim() || "";
 
+type AdminCredential = {
+  email: string;
+  password: string;
+};
+
 const base64UrlEncode = (value: string) =>
   Buffer.from(value, "utf8").toString("base64url");
 
@@ -14,22 +19,41 @@ const base64UrlDecode = (value: string) =>
 const sign = (payload: string) =>
   crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
 
+const getConfiguredAdminCredentials = (): AdminCredential[] => {
+  const credentials: AdminCredential[] = [];
+
+  const appendCredential = (emailKey: string, passwordKey: string) => {
+    const email = process.env[emailKey]?.trim().toLowerCase() || "";
+    const password = process.env[passwordKey]?.trim() || "";
+    if (!email || !password) return;
+
+    credentials.push({ email, password });
+  };
+
+  appendCredential("ADMIN_EMAIL", "ADMIN_PASSWORD");
+
+  Object.keys(process.env)
+    .filter((key) => /^ADMIN_EMAIL_\d+$/.test(key))
+    .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }))
+    .forEach((emailKey) => {
+      const suffix = emailKey.replace("ADMIN_EMAIL_", "");
+      appendCredential(emailKey, `ADMIN_PASSWORD_${suffix}`);
+    });
+
+  return credentials;
+};
+
 export const isAdminAuthConfigured = () =>
-  Boolean(
-    process.env.ADMIN_EMAIL?.trim()
-    && process.env.ADMIN_PASSWORD?.trim()
-    && getSecret(),
-  );
+  Boolean(getConfiguredAdminCredentials().length > 0 && getSecret());
 
 export const validateAdminCredentials = (email: string, password: string) => {
-  const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const configuredPassword = process.env.ADMIN_PASSWORD?.trim();
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPassword = password.trim();
 
-  return Boolean(
-    configuredEmail
-    && configuredPassword
-    && email.trim().toLowerCase() === configuredEmail
-    && password.trim() === configuredPassword,
+  return getConfiguredAdminCredentials().some(
+    (credential) =>
+      credential.email === normalizedEmail
+      && credential.password === normalizedPassword,
   );
 };
 

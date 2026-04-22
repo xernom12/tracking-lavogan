@@ -147,4 +147,5 @@ Salin `.env.example`, lalu isi minimal:
 - `BLOB_READ_WRITE_TOKEN`
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
+- `ADMIN_EMAIL_2` dan `ADMIN_PASSWORD_2` jika ingin menambah login admin kedua
 - `ADMIN_SESSION_SECRET`
