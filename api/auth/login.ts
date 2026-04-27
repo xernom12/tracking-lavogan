@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   }
 
   const { email, password } = parsedBody.data;
-  if (!validateAdminCredentials(email, password)) {
+  if (!(await validateAdminCredentials(email, password))) {
     await writeAuditLog(req, {
       actor: email,
       action: "admin.login.failed",

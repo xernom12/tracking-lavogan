@@ -5,6 +5,12 @@ export interface AuthContextType {
   adminEmail: string;
   isCheckingSession: boolean;
   login: (email: string, password: string) => boolean | Promise<boolean>;
+  register: (input: {
+    fullName: string;
+    email: string;
+    password: string;
+    registrationCode?: string;
+  }) => boolean | Promise<boolean>;
   logout: () => void;
 }
 

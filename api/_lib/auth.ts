@@ -1,4 +1,12 @@
 import crypto from "node:crypto";
+import {
+  countAdminAccounts,
+  createAdminAccount,
+  findAdminByEmail,
+  normalizeAdminEmail,
+  verifyAdminPassword,
+} from "./admin-repository.js";
+import { isDatabaseConfigured } from "./db.js";
 import { sendError } from "./http.js";
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 12;
@@ -46,17 +54,58 @@ const getConfiguredAdminCredentials = (): AdminCredential[] => {
 };
 
 export const isAdminAuthConfigured = () =>
-  Boolean(getConfiguredAdminCredentials().length > 0 && getSecret());
+  Boolean(getSecret() && (isDatabaseConfigured() || getConfiguredAdminCredentials().length > 0));
 
-export const validateAdminCredentials = (email: string, password: string) => {
-  const normalizedEmail = email.trim().toLowerCase();
+export const validateAdminCredentials = async (email: string, password: string) => {
+  const normalizedEmail = normalizeAdminEmail(email);
   const normalizedPassword = password.trim();
 
-  return getConfiguredAdminCredentials().some(
+  const databaseAdmin = await findAdminByEmail(normalizedEmail);
+  if (databaseAdmin) {
+    return databaseAdmin.isActive && verifyAdminPassword(normalizedPassword, databaseAdmin.passwordHash);
+  }
+
+  const matchedConfiguredCredential = getConfiguredAdminCredentials().find(
     (credential) =>
       credential.email === normalizedEmail
       && credential.password === normalizedPassword,
   );
+  if (!matchedConfiguredCredential) return false;
+
+  if (isDatabaseConfigured()) {
+    const adminCount = await countAdminAccounts();
+    if (adminCount === 0) {
+      await createAdminAccount({
+        email: normalizedEmail,
+        password: normalizedPassword,
+      });
+    }
+  }
+
+  return true;
+};
+
+export const isAdminRegistrationAllowed = async () => {
+  if (!getSecret() || !isDatabaseConfigured()) return false;
+
+  const registrationCode = process.env.ADMIN_REGISTRATION_CODE?.trim() || "";
+  if (registrationCode) return true;
+
+  return (await countAdminAccounts()) === 0;
+};
+
+export const validateAdminRegistrationCode = async (registrationCode?: string) => {
+  const configuredCode = process.env.ADMIN_REGISTRATION_CODE?.trim() || "";
+  if (!configuredCode) {
+    return (await countAdminAccounts()) === 0;
+  }
+
+  const receivedCode = registrationCode?.trim() || "";
+  if (!receivedCode) return false;
+
+  const expected = Buffer.from(configuredCode);
+  const actual = Buffer.from(receivedCode);
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
 };
 
 export const createAdminSessionToken = (email: string) => {

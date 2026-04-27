@@ -13,6 +13,16 @@ export const adminLoginSchema = z.object({
   password: requiredTrimmedString("Password wajib diisi."),
 });
 
+export const adminRegisterSchema = z.object({
+  fullName: requiredTrimmedString("Nama lengkap wajib diisi.").max(255, "Nama lengkap terlalu panjang."),
+  email: requiredTrimmedString("Email wajib diisi.").email("Format email tidak valid."),
+  password: requiredTrimmedString("Password wajib diisi.")
+    .min(8, "Password minimal 8 karakter.")
+    .regex(/[A-Za-z]/, "Password harus memuat huruf.")
+    .regex(/[0-9]/, "Password harus memuat angka."),
+  registrationCode: optionalTrimmedString.default(""),
+});
+
 export const submissionInputSchema = z.object({
   id: optionalTrimmedString,
   submissionNumber: requiredTrimmedString("Nomor permohonan wajib diisi."),

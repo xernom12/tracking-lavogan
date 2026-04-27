@@ -38,6 +38,42 @@ export const ensureSchemaReady = async () => {
   schemaReadyPromise = (async () => {
     const db = getDb();
     await db.execute(sql`
+      create table if not exists admins (
+        id varchar(64) primary key,
+        email varchar(255) not null unique,
+        password_hash varchar(255) not null,
+        full_name varchar(255),
+        is_active boolean not null default true,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+    `);
+    await db.execute(sql`
+      alter table admins
+      add column if not exists password_hash varchar(255);
+    `);
+    await db.execute(sql`
+      alter table admins
+      add column if not exists full_name varchar(255);
+    `);
+    await db.execute(sql`
+      alter table admins
+      add column if not exists is_active boolean not null default true;
+    `);
+    await db.execute(sql`
+      alter table admins
+      add column if not exists created_at timestamptz not null default now();
+    `);
+    await db.execute(sql`
+      alter table admins
+      add column if not exists updated_at timestamptz not null default now();
+    `);
+    await db.execute(sql`
+      create index if not exists admins_email_idx
+      on admins (email);
+    `);
+
+    await db.execute(sql`
       create table if not exists submission_snapshots (
         id varchar(64) primary key,
         submission_number varchar(120) not null unique,
