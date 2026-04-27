@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useSubmissions } from "@/contexts/useSubmissions";
 
 describe("public live sync", () => {
-  it("refreshes tracked submission details when context data changes after the initial search", async () => {
+  it("refreshes tracked submission details without auto-scrolling the public page", async () => {
     const scrollIntoView = vi.fn();
 
     Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
@@ -45,9 +45,7 @@ describe("public live sync", () => {
       expect(document.getElementById("tracking-result-summary")).not.toBeNull();
     }, { timeout: 5000 });
 
-    await waitFor(() => {
-      expect(scrollIntoView).toHaveBeenCalledTimes(1);
-    });
+    expect(scrollIntoView).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getAllByRole("button", { name: /salinan akreditasi/i })[0]);
 
@@ -69,6 +67,6 @@ describe("public live sync", () => {
       expect(screen.getByText(/Revisi-Akreditasi\.pdf/i)).toBeInTheDocument();
     });
 
-    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).not.toHaveBeenCalled();
   }, 10000);
 });

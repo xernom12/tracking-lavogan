@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchSection from "@/components/SearchSection";
 import AppHeader from "@/components/AppHeader";
@@ -18,11 +18,9 @@ const Index = () => {
   const [trackedSubmissionId, setTrackedSubmissionId] = useState<string | null>(null);
   const [selectedStage, setSelectedStage] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
-  const [resultScrollKey, setResultScrollKey] = useState(0);
   const [searchResetKey, setSearchResetKey] = useState(0);
   const { findBySubmissionNumber, getSubmission } = useSubmissions();
   const submission = trackedSubmissionId ? getSubmission(trackedSubmissionId) || null : null;
-  const shouldScrollToSearchResult = !isSearching && !!submission && resultScrollKey > 0;
 
   const handleSearch = async (nextQuery: string) => {
     const normalizedQuery = nextQuery.trim();
@@ -35,37 +33,12 @@ const Index = () => {
     if (found) {
       setTrackedSubmissionId(found.id);
       setSelectedStage(getActiveStageIndex(found));
-      setResultScrollKey((current) => current + 1);
     } else {
       setTrackedSubmissionId(null);
     }
 
     return !!found;
   };
-
-  useEffect(() => {
-    if (!shouldScrollToSearchResult) return undefined;
-
-    const timeoutIds: number[] = [];
-    const scrollToResult = (attempt = 0) => {
-      const resultSummary = document.getElementById("tracking-result-summary");
-
-      if (resultSummary) {
-        resultSummary.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-        return;
-      }
-
-      if (attempt >= 12) return;
-      timeoutIds.push(window.setTimeout(() => scrollToResult(attempt + 1), 100));
-    };
-
-    timeoutIds.push(window.setTimeout(() => scrollToResult(), 80));
-
-    return () => timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
-  }, [resultScrollKey, shouldScrollToSearchResult]);
 
   const scrollToStageDetails = () => {
     window.setTimeout(() => {
@@ -80,7 +53,6 @@ const Index = () => {
     setTrackedSubmissionId(null);
     setSelectedStage(0);
     setIsSearching(false);
-    setResultScrollKey(0);
     setSearchResetKey((current) => current + 1);
   };
 
