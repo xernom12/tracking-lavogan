@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { SubmissionContext } from "@/contexts/submission-context.shared";
 import { initialSubmissions } from "@/data/initialSubmissions";
@@ -17,11 +17,14 @@ import {
 import {
   createRemoteSubmission,
   deleteRemoteSubmission,
+  fetchPublicSubmissionByNumber,
+  fetchPublicSubmissions,
   fetchRemoteSubmissions,
   runRemoteSubmissionAction,
   updateRemoteSubmission,
 } from "@/lib/submission-api";
 import { isRemoteStorageEnabled } from "@/lib/submission-env";
+import { AuthContext } from "@/contexts/auth-context.shared";
 import type {
   AdminSubmission,
   ApprovalFinalizeInput,
@@ -57,6 +60,9 @@ const mergeUpdatedSubmission = (
 ) => [updatedSubmission, ...submissions.filter((submission) => submission.id !== updatedSubmission.id)];
 
 export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
+  const auth = useContext(AuthContext);
+  const isLoggedIn = auth?.isLoggedIn ?? false;
+  const isCheckingSession = auth?.isCheckingSession ?? false;
   const [submissions, setSubmissions] = useState<AdminSubmission[]>(() =>
     remoteModeEnabled ? [] : readStoredSubmissions(),
   );
@@ -67,12 +73,14 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
     submissionsRef.current = submissions;
   }, [submissions]);
 
-  const syncFromRemote = async (showErrorToast = false) => {
+  const syncFromRemote = useCallback(async (showErrorToast = false) => {
     if (!remoteModeEnabled || remoteSyncInFlightRef.current) return;
 
     remoteSyncInFlightRef.current = true;
     try {
-      const remoteSubmissions = await fetchRemoteSubmissions();
+      const remoteSubmissions = isLoggedIn
+        ? await fetchRemoteSubmissions()
+        : await fetchPublicSubmissions();
       setSubmissions(remoteSubmissions);
     } catch (error) {
       if (showErrorToast) {
@@ -81,18 +89,20 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       remoteSyncInFlightRef.current = false;
     }
-  };
+  }, [isLoggedIn]);
 
   useEffect(() => {
-    if (!remoteModeEnabled) return;
+    if (!remoteModeEnabled || isCheckingSession) return;
 
     void syncFromRemote(true);
+    if (!isLoggedIn) return;
+
     const intervalId = window.setInterval(() => {
       void syncFromRemote(false);
     }, REMOTE_POLL_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [isCheckingSession, isLoggedIn, syncFromRemote]);
 
   useEffect(() => {
     if (remoteModeEnabled || typeof window === "undefined") return;
@@ -113,13 +123,23 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
 
   const getSubmission = (id: string) => submissions.find((submission) => submission.id === id);
 
-  const findBySubmissionNumber = (submissionNumber: string) => {
+  const findBySubmissionNumber = async (submissionNumber: string) => {
     const fromState = findSubmissionBySubmissionNumber(submissions, submissionNumber);
     if (fromState) return fromState;
 
     if (!remoteModeEnabled && typeof window !== "undefined") {
       const fromStorage = findSubmissionBySubmissionNumber(readStoredSubmissions(), submissionNumber);
       if (fromStorage) return fromStorage;
+    }
+
+    if (remoteModeEnabled) {
+      try {
+        const publicSubmission = await fetchPublicSubmissionByNumber(submissionNumber);
+        setSubmissions((currentSubmissions) => mergeUpdatedSubmission(currentSubmissions, publicSubmission));
+        return publicSubmission;
+      } catch {
+        return undefined;
+      }
     }
 
     return undefined;

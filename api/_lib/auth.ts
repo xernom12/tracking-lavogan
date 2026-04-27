@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import { sendError } from "./http.js";
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 12;
+const TOKEN_TTL_SECONDS = TOKEN_TTL_MS / 1000;
+const ADMIN_SESSION_COOKIE_NAME = "tracking_os_admin_session";
 
 const getSecret = () => process.env.ADMIN_SESSION_SECRET?.trim() || "";
 
@@ -98,7 +100,27 @@ export const verifyAdminSessionToken = (token?: string | null) => {
   }
 };
 
-export const getBearerToken = (req) => {
+const parseCookies = (cookieHeader: unknown): Record<string, string> => {
+  if (typeof cookieHeader !== "string" || !cookieHeader.trim()) return {};
+
+  return cookieHeader.split(";").reduce<Record<string, string>>((cookies, entry) => {
+    const [rawName, ...rawValueParts] = entry.trim().split("=");
+    if (!rawName) return cookies;
+
+    cookies[rawName] = decodeURIComponent(rawValueParts.join("=") || "");
+    return cookies;
+  }, {});
+};
+
+const getCookieToken = (req) => {
+  const cookies = parseCookies(req.headers.cookie || req.headers.Cookie);
+  return cookies[ADMIN_SESSION_COOKIE_NAME] || "";
+};
+
+export const getAdminSessionToken = (req) => {
+  const cookieToken = getCookieToken(req);
+  if (cookieToken) return cookieToken;
+
   const authorization = req.headers.authorization || req.headers.Authorization;
   if (typeof authorization === "string" && authorization.startsWith("Bearer ")) {
     return authorization.slice("Bearer ".length).trim();
@@ -110,13 +132,43 @@ export const getBearerToken = (req) => {
   return "";
 };
 
+export const setAdminSessionCookie = (res, token: string) => {
+  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  res.setHeader(
+    "Set-Cookie",
+    [
+      `${ADMIN_SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+      "Path=/",
+      "HttpOnly",
+      "SameSite=Lax",
+      `Max-Age=${TOKEN_TTL_SECONDS}`,
+      secure ? "Secure" : "",
+    ].filter(Boolean).join("; "),
+  );
+};
+
+export const clearAdminSessionCookie = (res) => {
+  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  res.setHeader(
+    "Set-Cookie",
+    [
+      `${ADMIN_SESSION_COOKIE_NAME}=`,
+      "Path=/",
+      "HttpOnly",
+      "SameSite=Lax",
+      "Max-Age=0",
+      secure ? "Secure" : "",
+    ].filter(Boolean).join("; "),
+  );
+};
+
 export const requireAdminSession = (req, res) => {
   if (!isAdminAuthConfigured()) {
     sendError(res, 500, "Konfigurasi admin backend belum lengkap.");
     return null;
   }
 
-  const session = verifyAdminSessionToken(getBearerToken(req));
+  const session = verifyAdminSessionToken(getAdminSessionToken(req));
   if (!session) {
     sendError(res, 401, "Sesi admin tidak valid atau sudah kedaluwarsa.");
     return null;

@@ -39,6 +39,7 @@ export interface Document {
   note?: string;
   history?: DocumentHistoryEntry[];
   uploads?: DocumentUploadEntry[];
+  publicUploadToken?: string;
 }
 
 export interface Stage {

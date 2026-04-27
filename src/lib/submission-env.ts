@@ -14,5 +14,3 @@ export const buildApiUrl = (path: string) => {
   const baseUrl = getApiBaseUrl();
   return `${baseUrl}${normalizedPath}`;
 };
-
-export const AUTH_TOKEN_STORAGE_KEY = "tracking-os-auth-token";

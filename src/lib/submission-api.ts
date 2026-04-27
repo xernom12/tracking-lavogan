@@ -6,23 +6,15 @@ import type {
   RevisionUploadInput,
   SessionDecisionInput,
 } from "@/lib/submission-types";
-import { AUTH_TOKEN_STORAGE_KEY, buildApiUrl } from "@/lib/submission-env";
-
-const getAuthToken = () => {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
-};
+import { buildApiUrl } from "@/lib/submission-env";
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers || {});
-  const authToken = getAuthToken();
-  if (authToken) {
-    headers.set("Authorization", `Bearer ${authToken}`);
-  }
 
   const response = await fetch(buildApiUrl(path), {
     ...init,
     headers,
+    credentials: "include",
   });
 
   const payload = await response.json().catch(() => ({}));
@@ -46,6 +38,17 @@ const fileToBase64 = async (file: File) => {
 export const fetchRemoteSubmissions = async () => {
   const payload = await request<{ submissions: AdminSubmission[] }>("/api/submissions");
   return payload.submissions;
+};
+
+export const fetchPublicSubmissions = async () => {
+  const payload = await request<{ submissions: AdminSubmission[] }>("/api/public/submissions");
+  return payload.submissions;
+};
+
+export const fetchPublicSubmissionByNumber = async (submissionNumber: string) => {
+  const params = new URLSearchParams({ number: submissionNumber });
+  const payload = await request<{ submission: AdminSubmission }>(`/api/public/submissions/track?${params.toString()}`);
+  return payload.submission;
 };
 
 export const createRemoteSubmission = async (input: NewSubmissionInput) => {
@@ -76,7 +79,14 @@ export const deleteRemoteSubmission = async (id: string) => {
   });
 };
 
-const uploadRemoteFile = async (folder: string, file: File) => {
+const uploadRemoteFile = async (
+  folder: string,
+  file: File,
+  options: {
+    publicActionToken?: string;
+    documentNumber?: number;
+  } = {},
+) => {
   const dataBase64 = await fileToBase64(file);
   const payload = await request<{
     url: string;
@@ -92,6 +102,8 @@ const uploadRemoteFile = async (folder: string, file: File) => {
       fileName: file.name,
       contentType: file.type || "application/pdf",
       dataBase64,
+      publicActionToken: options.publicActionToken,
+      documentNumber: options.documentNumber,
     }),
   });
 
@@ -124,6 +136,10 @@ export const runRemoteSubmissionAction = async (
     const uploadedFile = await uploadRemoteFile(
       `revision/${id}/${payload.phase.toLowerCase()}`,
       payload.input.file,
+      {
+        publicActionToken: payload.input.publicActionToken,
+        documentNumber: payload.documentNumber,
+      },
     );
 
     nextPayload = {

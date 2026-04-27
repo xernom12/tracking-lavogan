@@ -40,3 +40,24 @@ export const submissionSnapshots = pgTable(
     updatedIdx: index("submission_snapshots_updated_idx").on(table.updatedAt),
   }),
 );
+
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    actor: varchar("actor", { length: 255 }).notNull(),
+    action: varchar("action", { length: 120 }).notNull(),
+    targetType: varchar("target_type", { length: 64 }).notNull(),
+    targetId: varchar("target_id", { length: 120 }).notNull().default(""),
+    ipAddress: varchar("ip_address", { length: 64 }).notNull().default("unknown"),
+    userAgent: varchar("user_agent", { length: 500 }).notNull().default(""),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    actorIdx: index("audit_logs_actor_idx").on(table.actor),
+    actionIdx: index("audit_logs_action_idx").on(table.action),
+    targetIdx: index("audit_logs_target_idx").on(table.targetType, table.targetId),
+    createdIdx: index("audit_logs_created_idx").on(table.createdAt),
+  }),
+);

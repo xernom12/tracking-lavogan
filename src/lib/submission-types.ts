@@ -52,6 +52,7 @@ export interface RevisionUploadInput {
   fileUrl?: string;
   blobPath?: string;
   file?: File | null;
+  publicActionToken?: string;
 }
 
 export interface SubmissionActionPayloadMap {

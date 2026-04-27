@@ -1,24 +1,42 @@
 import { requireAdminSession } from "./_lib/auth.js";
+import { writeAuditLog } from "./_lib/audit.js";
 import { readJsonBody, sendError, sendJson, setCommonHeaders } from "./_lib/http.js";
+import { enforceRateLimit } from "./_lib/rate-limit.js";
 import { listSubmissions, upsertSubmission } from "./_lib/repository.js";
 import { createSubmission } from "./_lib/submission-service.js";
+import { sendValidationError, submissionInputSchema } from "./_lib/validation.js";
 
 export default async function handler(req, res) {
   setCommonHeaders(res);
 
   try {
     if (req.method === "GET") {
+      const session = requireAdminSession(req, res);
+      if (!session) return;
+
       const submissions = await listSubmissions();
       return sendJson(res, 200, {
         submissions,
+        requestedBy: session.email,
       });
     }
 
     if (req.method === "POST") {
+      if (!enforceRateLimit(req, res, {
+        key: "admin-submission-create",
+        limit: 60,
+        windowMs: 60 * 1000,
+      })) return;
+
       const session = requireAdminSession(req, res);
       if (!session) return;
 
-      const payload = readJsonBody(req);
+      const parsedBody = submissionInputSchema.safeParse(readJsonBody(req));
+      if (!parsedBody.success) {
+        return sendValidationError(res, parsedBody.error);
+      }
+
+      const payload = parsedBody.data;
       const submissions = await listSubmissions();
       const nextSubmissions = createSubmission(submissions, payload, session.email);
       const createdSubmission = nextSubmissions[0];
@@ -28,6 +46,15 @@ export default async function handler(req, res) {
       }
 
       await upsertSubmission(createdSubmission);
+      await writeAuditLog(req, {
+        actor: session.email,
+        action: "submission.create",
+        targetType: "submission",
+        targetId: createdSubmission.id,
+        metadata: {
+          submissionNumber: createdSubmission.submissionNumber,
+        },
+      });
       return sendJson(res, 201, {
         submission: createdSubmission,
       });

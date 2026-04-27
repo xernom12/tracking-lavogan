@@ -12,7 +12,7 @@ import type {
 export interface SubmissionContextType {
   submissions: AdminSubmission[];
   getSubmission: (id: string) => AdminSubmission | undefined;
-  findBySubmissionNumber: (num: string) => AdminSubmission | undefined;
+  findBySubmissionNumber: (num: string) => AdminSubmission | undefined | Promise<AdminSubmission | undefined>;
   addSubmission: (input: NewSubmissionInput) => void;
   updatePengajuanData: (id: string, input: NewSubmissionInput) => void;
   deleteSubmission: (id: string) => void;

@@ -71,6 +71,36 @@ export const ensureSchemaReady = async () => {
       create index if not exists submission_snapshots_updated_idx
       on submission_snapshots (updated_at desc);
     `);
+
+    await db.execute(sql`
+      create table if not exists audit_logs (
+        id varchar(64) primary key,
+        actor varchar(255) not null,
+        action varchar(120) not null,
+        target_type varchar(64) not null,
+        target_id varchar(120) not null default '',
+        ip_address varchar(64) not null default 'unknown',
+        user_agent varchar(500) not null default '',
+        metadata jsonb not null default '{}'::jsonb,
+        created_at timestamptz not null default now()
+      );
+    `);
+    await db.execute(sql`
+      create index if not exists audit_logs_actor_idx
+      on audit_logs (actor);
+    `);
+    await db.execute(sql`
+      create index if not exists audit_logs_action_idx
+      on audit_logs (action);
+    `);
+    await db.execute(sql`
+      create index if not exists audit_logs_target_idx
+      on audit_logs (target_type, target_id);
+    `);
+    await db.execute(sql`
+      create index if not exists audit_logs_created_idx
+      on audit_logs (created_at desc);
+    `);
   })();
 
   await schemaReadyPromise;

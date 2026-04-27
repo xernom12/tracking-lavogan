@@ -425,7 +425,10 @@ const RevisionUploadPanel = ({
   const handleConfirmUpload = () => {
     if (!pendingUpload) return;
 
-    uploadRevisionDocument(submissionId, phase, documentNumber, pendingUpload);
+    uploadRevisionDocument(submissionId, phase, documentNumber, {
+      ...pendingUpload,
+      publicActionToken: doc.publicUploadToken,
+    });
     setPendingUpload(null);
     setIsConfirmDialogOpen(false);
 

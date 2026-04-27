@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "@/contexts/auth-context.shared";
-import { AUTH_TOKEN_STORAGE_KEY, buildApiUrl, isRemoteStorageEnabled } from "@/lib/submission-env";
+import { buildApiUrl, isRemoteStorageEnabled } from "@/lib/submission-env";
 
 const AUTH_STORAGE_KEY = "tracking-os-auth";
 const AUTH_USER_STORAGE_KEY = "tracking-os-auth-user";
@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch(buildApiUrl("/api/auth/login"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -50,11 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !payload?.token) {
+      if (!response.ok || !payload?.authenticated) {
         return false;
       }
 
-      window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, payload.token);
       setAuthState({
         isLoggedIn: true,
         adminEmail: payload.email || normalizedEmail,
@@ -66,8 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    if (remoteModeEnabled) {
+      void fetch(buildApiUrl("/api/auth/logout"), {
+        method: "POST",
+        credentials: "include",
+      });
     }
 
     setAuthState({
@@ -100,25 +103,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const token = window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-    if (!token) {
-      setIsCheckingSession(false);
-      return;
-    }
-
     let isMounted = true;
     const verifySession = async () => {
       try {
         const response = await fetch(buildApiUrl("/api/auth/me"), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: "include",
         });
         const payload = await response.json().catch(() => ({}));
 
         if (!isMounted) return;
         if (!response.ok || !payload?.email) {
-          window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
           setAuthState({
             isLoggedIn: false,
             adminEmail: "",

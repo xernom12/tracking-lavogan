@@ -29,7 +29,7 @@ const Index = () => {
       return;
     }
 
-    const found = findBySubmissionNumber(normalizedQuery);
+    const found = await findBySubmissionNumber(normalizedQuery);
 
     if (found) {
       setTrackedSubmissionId(found.id);

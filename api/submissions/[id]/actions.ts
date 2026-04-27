@@ -1,7 +1,12 @@
 import { requireAdminSession } from "../../_lib/auth.js";
+import { writeAuditLog } from "../../_lib/audit.js";
 import { readJsonBody, sendError, sendJson, setCommonHeaders } from "../../_lib/http.js";
+import { verifyPublicRevisionUploadToken } from "../../_lib/public-action-token.js";
+import { projectPublicSubmission } from "../../_lib/public-submission.js";
+import { enforceRateLimit } from "../../_lib/rate-limit.js";
 import { listSubmissions, upsertSubmission } from "../../_lib/repository.js";
 import { applySubmissionAction } from "../../_lib/submission-service.js";
+import { sendValidationError, submissionActionSchema } from "../../_lib/validation.js";
 
 const getId = (req) => String(req.query.id || "").trim();
 
@@ -17,18 +22,40 @@ export default async function handler(req, res) {
     return sendError(res, 400, "ID submission tidak valid.");
   }
 
-  const { type = "", payload = {} } = readJsonBody(req);
-  if (!type) {
-    return sendError(res, 400, "Tipe aksi wajib diisi.");
+  const parsedBody = submissionActionSchema.safeParse(readJsonBody(req));
+  if (!parsedBody.success) {
+    return sendValidationError(res, parsedBody.error);
   }
 
-  const isPublicAction = String(type) === "uploadRevisionDocument";
+  const { type, payload } = parsedBody.data;
+  const isPublicAction = type === "uploadRevisionDocument";
+  if (!enforceRateLimit(req, res, {
+    key: isPublicAction ? "public-submission-action" : "admin-submission-action",
+    limit: isPublicAction ? 30 : 120,
+    windowMs: 60 * 1000,
+  })) return;
+
+  if (isPublicAction) {
+    const isValidPublicToken = verifyPublicRevisionUploadToken(
+      payload.input.publicActionToken,
+      {
+        submissionId: id,
+        phase: payload.phase,
+        documentNumber: payload.documentNumber,
+      },
+    );
+
+    if (!isValidPublicToken) {
+      return sendError(res, 401, "Token aksi dokumen perbaikan tidak valid atau sudah kedaluwarsa.");
+    }
+  }
+
   const session = isPublicAction ? { email: "Pemohon" } : requireAdminSession(req, res);
   if (!session) return;
 
   try {
     const submissions = await listSubmissions();
-    const nextSubmissions = applySubmissionAction(submissions, id, String(type), payload, session.email);
+    const nextSubmissions = applySubmissionAction(submissions, id, type, payload, session.email);
     const updatedSubmission = nextSubmissions.find((submission) => submission.id === id);
 
     if (!updatedSubmission) {
@@ -36,8 +63,21 @@ export default async function handler(req, res) {
     }
 
     await upsertSubmission(updatedSubmission);
+    await writeAuditLog(req, {
+      actor: session.email,
+      action: `submission.action.${type}`,
+      targetType: "submission",
+      targetId: id,
+      metadata: {
+        submissionNumber: updatedSubmission.submissionNumber,
+        phase: "phase" in payload ? payload.phase : undefined,
+        documentNumber: "documentNumber" in payload ? payload.documentNumber : undefined,
+      },
+    });
     return sendJson(res, 200, {
-      submission: updatedSubmission,
+      submission: isPublicAction
+        ? projectPublicSubmission(updatedSubmission, { includeProcessDetails: true })
+        : updatedSubmission,
       actionType: type,
       updatedBy: session.email,
     });
