@@ -55,7 +55,8 @@ export default async function handler(req, res) {
 
   try {
     const submissions = await listSubmissions();
-    const nextSubmissions = applySubmissionAction(submissions, id, type, payload, session.email);
+    const actionPayload = type === "confirmPengajuan" ? undefined : payload;
+    const nextSubmissions = applySubmissionAction(submissions, id, type, actionPayload, session.email);
     const updatedSubmission = nextSubmissions.find((submission) => submission.id === id);
 
     if (!updatedSubmission) {
@@ -70,8 +71,8 @@ export default async function handler(req, res) {
       targetId: id,
       metadata: {
         submissionNumber: updatedSubmission.submissionNumber,
-        phase: "phase" in payload ? payload.phase : undefined,
-        documentNumber: "documentNumber" in payload ? payload.documentNumber : undefined,
+        phase: typeof payload === "object" && payload && "phase" in payload ? payload.phase : undefined,
+        documentNumber: typeof payload === "object" && payload && "documentNumber" in payload ? payload.documentNumber : undefined,
       },
     });
     return sendJson(res, 200, {

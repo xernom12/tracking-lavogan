@@ -2,16 +2,9 @@ import { z } from "zod";
 import type { ApiResponseLike } from "./http.js";
 import { sendError } from "./http.js";
 
-const optionalTrimmedString = z.preprocess(
-  (value) => (typeof value === "string" ? value.trim() : value),
-  z.string().optional(),
-);
+const optionalTrimmedString = z.string().trim().optional();
 
-const requiredTrimmedString = (message: string) =>
-  z.preprocess(
-    (value) => (typeof value === "string" ? value.trim() : value),
-    z.string().min(1, message),
-  );
+const requiredTrimmedString = (message: string) => z.string().trim().min(1, message);
 
 const positiveFileSize = z.coerce.number().finite().positive();
 
@@ -60,7 +53,7 @@ export const submissionActionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("confirmPengajuan"),
     payload: z.unknown().optional(),
-  }).transform(({ type }) => ({ type, payload: undefined })),
+  }),
   z.object({
     type: z.literal("uploadRevisionDocument"),
     payload: z.object({
@@ -92,9 +85,9 @@ export const submissionActionSchema = z.discriminatedUnion("type", [
 ]);
 
 export const uploadFileSchema = z.object({
-  folder: requiredTrimmedString("Folder upload wajib diisi.").default("uploads"),
+  folder: optionalTrimmedString.default("uploads"),
   fileName: requiredTrimmedString("Nama file wajib diisi."),
-  contentType: requiredTrimmedString("Content-Type wajib diisi.").default("application/pdf"),
+  contentType: optionalTrimmedString.default("application/pdf"),
   dataBase64: requiredTrimmedString("Konten file wajib diisi."),
   publicActionToken: optionalTrimmedString.default(""),
   documentNumber: z.coerce.number().int().min(0).default(0),

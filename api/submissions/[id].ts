@@ -10,6 +10,7 @@ import {
 } from "../_lib/repository.js";
 import { removeSubmission, updateSubmission } from "../_lib/submission-service.js";
 import { sendValidationError, submissionInputSchema } from "../_lib/validation.js";
+import type { NewSubmissionInput } from "../../src/lib/submission-types.js";
 
 const getId = (req) => String(req.query.id || "").trim();
 
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
         return sendValidationError(res, parsedBody.error);
       }
 
-      const payload = parsedBody.data;
+      const payload = parsedBody.data as NewSubmissionInput;
       const submissions = await listSubmissions();
       const nextSubmissions = updateSubmission(submissions, id, payload);
       const updatedSubmission = nextSubmissions.find((submission) => submission.id === id);

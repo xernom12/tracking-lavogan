@@ -5,6 +5,7 @@ import { enforceRateLimit } from "./_lib/rate-limit.js";
 import { listSubmissions, upsertSubmission } from "./_lib/repository.js";
 import { createSubmission } from "./_lib/submission-service.js";
 import { sendValidationError, submissionInputSchema } from "./_lib/validation.js";
+import type { NewSubmissionInput } from "../src/lib/submission-types.js";
 
 export default async function handler(req, res) {
   setCommonHeaders(res);
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
         return sendValidationError(res, parsedBody.error);
       }
 
-      const payload = parsedBody.data;
+      const payload = parsedBody.data as NewSubmissionInput;
       const submissions = await listSubmissions();
       const nextSubmissions = createSubmission(submissions, payload, session.email);
       const createdSubmission = nextSubmissions[0];
