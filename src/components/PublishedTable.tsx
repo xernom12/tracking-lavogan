@@ -157,13 +157,6 @@ const PublishedTable = () => {
                                                 >
                                                     <FileText className="w-4 h-4 stroke-[2]" />
                                                 </a>
-                                            ) : s.skFileName ? (
-                                                <span
-                                                    className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700"
-                                                    title="File izin belum tersedia untuk diunduh"
-                                                >
-                                                    Belum tersedia
-                                                </span>
                                             ) : (
                                                 <span className="text-slate-400 text-xs font-medium">-</span>
                                             )}

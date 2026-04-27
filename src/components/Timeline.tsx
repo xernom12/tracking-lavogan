@@ -107,7 +107,9 @@ const formatTimelineDateLabel = (date: string): string => {
 const formatTimestampLabel = (date: string, time: string): string => {
   if (!time || time === "-") return date;
 
-  const normalizedTime = time.replace(":", ".");
+  const normalizedTime = time
+    .replace(/\s*WIB$/i, "")
+    .replace(":", ".");
   return `${formatTimelineDateLabel(date)} ${normalizedTime} WIB`;
 };
 

@@ -45,7 +45,7 @@ const AppHeader = ({ variant = "public", onLogoClick }: AppHeaderProps) => {
                 className="app-secondary-button inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
               >
                 <LogIn className="h-4 w-4" />
-                Dashboard Admin
+                Login
               </button>
             </>
           )}
