@@ -22,6 +22,7 @@ const Index = () => {
   const [searchResetKey, setSearchResetKey] = useState(0);
   const { findBySubmissionNumber, getSubmission } = useSubmissions();
   const submission = trackedSubmissionId ? getSubmission(trackedSubmissionId) || null : null;
+  const shouldScrollToSearchResult = !isSearching && !!submission && resultScrollKey > 0;
 
   const handleSearch = async (nextQuery: string) => {
     const normalizedQuery = nextQuery.trim();
@@ -43,7 +44,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (isSearching || !submission || resultScrollKey === 0) return undefined;
+    if (!shouldScrollToSearchResult) return undefined;
 
     const timeoutIds: number[] = [];
     const scrollToResult = (attempt = 0) => {
@@ -64,7 +65,7 @@ const Index = () => {
     timeoutIds.push(window.setTimeout(() => scrollToResult(), 80));
 
     return () => timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
-  }, [isSearching, resultScrollKey, submission]);
+  }, [resultScrollKey, shouldScrollToSearchResult]);
 
   const scrollToStageDetails = () => {
     window.setTimeout(() => {

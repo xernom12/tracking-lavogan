@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import Index from "@/pages/Index";
 import { SubmissionProvider } from "@/contexts/SubmissionContext";
@@ -8,9 +8,11 @@ import { useSubmissions } from "@/contexts/useSubmissions";
 
 describe("public live sync", () => {
   it("refreshes tracked submission details when context data changes after the initial search", async () => {
+    const scrollIntoView = vi.fn();
+
     Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
       configurable: true,
-      value: () => {},
+      value: scrollIntoView,
     });
 
     let api: ReturnType<typeof useSubmissions> | null = null;
@@ -43,6 +45,10 @@ describe("public live sync", () => {
       expect(document.getElementById("tracking-result-summary")).not.toBeNull();
     }, { timeout: 5000 });
 
+    await waitFor(() => {
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+
     fireEvent.click(screen.getAllByRole("button", { name: /salinan akreditasi/i })[0]);
 
     await waitFor(() => {
@@ -62,5 +68,7 @@ describe("public live sync", () => {
       expect(screen.getByText(/unggahan terakhir/i)).toBeInTheDocument();
       expect(screen.getByText(/Revisi-Akreditasi\.pdf/i)).toBeInTheDocument();
     });
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
   }, 10000);
 });
