@@ -39,7 +39,7 @@ const monthMap: Record<string, number> = {
 const toneConfig = {
   waiting: {
     icon: Clock3,
-    markerClass: "border-2 border-emerald-300 bg-white text-emerald-600 shadow-sm",
+    markerClass: "border-2 border-slate-300 bg-white text-slate-500 shadow-sm",
   },
   success: {
     icon: Check,
@@ -182,7 +182,7 @@ const formatRevisionNote = (entries: SessionEntry[]): string => {
   if (revisions.length === 0) return "";
 
   return [
-    `Perbaikan : ${revisions
+    `Perbaikan: ${revisions
       .map((entry, index) => `${index + 1}. ${entry.note || entry.documentName}`)
       .join("\n")}`,
   ].join("\n");
@@ -305,13 +305,13 @@ const buildReviewSummaryItem = (
     key: `review-session-${event.sessionNumber || 1}-${event.date}-${event.time}`,
     title: hasRevision ? "Permohonan Perlu Diperbaiki" : "Peninjauan Dokumen Selesai",
     description: hasRevision
-      ? "Pelaku Usaha perlu memperbaiki dokumen persyaratan sesuai catatan verifikator."
+      ? "Pelaku Usaha perlu memperbaiki dokumen persyaratan sesuai catatan penelaah."
       : "Seluruh dokumen pada tahap peninjauan telah dinyatakan sesuai dan proses dilanjutkan ke tahap persetujuan.",
     date: event.date,
     time: event.time,
     tone: hasRevision ? "revision" : "success",
     note: hasRevision ? formatRevisionNote(sessionEntries) : undefined,
-    actorLabel: buildActorLabel("Diverifikasi oleh", getActorDisplayName(event.actor, "verification")),
+    actorLabel: buildActorLabel("Ditinjau oleh", getActorDisplayName(event.actor, "review")),
   };
 };
 
@@ -334,7 +334,7 @@ const buildUploadItem = (
   return {
     key: `upload-${phase}-${event.documentNumber || 0}-${event.date}-${event.time}-${event.description}`,
     title: "Menunggu Peninjauan Dokumen",
-    description: "Dokumen perbaikan sudah lengkap dan menunggu peninjauan ulang oleh K/L - Verifikator.",
+    description: "Dokumen perbaikan sudah lengkap dan menunggu peninjauan ulang oleh K/L - Penelaah.",
     date: event.date,
     time: event.time,
     tone: "success",

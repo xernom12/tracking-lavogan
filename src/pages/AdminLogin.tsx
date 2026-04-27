@@ -1,22 +1,39 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/useAuth";
-import { LogIn } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isSuccess = await login(email, password);
-    if (isSuccess) {
-      navigate("/admin");
-    } else {
-      setError("Email atau password admin tidak valid.");
+
+    if (isSubmitting) return;
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || !password.trim()) {
+      setError("Email dan password wajib diisi.");
+      return;
+    }
+
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const isSuccess = await login(normalizedEmail, password);
+      if (isSuccess) {
+        navigate("/admin");
+      } else {
+        setError("Email atau password admin tidak valid.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -89,6 +106,7 @@ const AdminLogin = () => {
                   <input
                     id="admin-email"
                     type="email"
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -105,6 +123,7 @@ const AdminLogin = () => {
                   <input
                     id="admin-password"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -125,9 +144,17 @@ const AdminLogin = () => {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="app-primary-button mt-2 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold"
               >
-                Masuk
+                {isSubmitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Memproses...
+                  </span>
+                ) : (
+                  "Masuk"
+                )}
               </button>
             </form>
 

@@ -187,7 +187,9 @@ const PublishedTable = () => {
                 </table>
             </div>
             <div className="flex flex-col gap-3 border-t border-slate-200/70 bg-slate-50/55 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
-                <p className="text-sm text-slate-600">Total {visibleRowsCount} baris.</p>
+                <p className="text-sm text-slate-600">
+                    Menampilkan {visibleRowsCount} dari {totalRows} izin.
+                </p>
                 <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center md:w-auto md:gap-4">
                     <div className="flex items-center gap-2">
                         <label htmlFor="public-rows-per-page" className="text-sm font-medium text-slate-700">Baris per halaman</label>

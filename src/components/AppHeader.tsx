@@ -42,7 +42,7 @@ const AppHeader = ({ variant = "public", onLogoClick }: AppHeaderProps) => {
                 onClick={() => navigate("/admin/login")}
                 aria-label="Masuk ke dashboard admin"
                 title="Masuk ke dashboard admin"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-slate-800 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900"
+                className="app-secondary-button inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
               >
                 <LogIn className="h-4 w-4" />
                 Dashboard Admin

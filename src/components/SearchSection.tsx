@@ -57,12 +57,12 @@ const SearchSection = ({ onSearch, onSearchingChange }: SearchSectionProps) => {
         </div>
 
         <h1 className="text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl font-heading font-black text-foreground mb-4 sm:mb-6 tracking-tighter py-1 mx-auto leading-[1.15]">
-          <span className="block">PB UMKU/OSS Penyelenggaraan</span>
-          <span className="block">Pemagangan Luar Negeri</span>
+          <span className="block">Lacak Status Permohonan</span>
+          <span className="block">PB UMKU/OSS Pemagangan Luar Negeri</span>
         </h1>
 
         <p className="text-slate-600 font-medium mb-7 sm:mb-12 max-w-2xl mx-auto text-[14px] sm:text-lg leading-relaxed px-2 sm:px-0">
-          Pantau status pengajuan Perizinan PB UMKU/OSS Penyelenggaraan Pemagangan Luar Negeri untuk Kepentingan Perusahaan melalui OSS.
+          Pantau perkembangan pengajuan PB UMKU/OSS Penyelenggaraan Pemagangan Luar Negeri untuk Kepentingan Perusahaan secara cepat dan transparan.
         </p>
 
         <form
@@ -97,7 +97,7 @@ const SearchSection = ({ onSearch, onSearchingChange }: SearchSectionProps) => {
                 }
               }}
               aria-invalid={!!error}
-              aria-describedby={error ? "search-error" : undefined}
+              aria-describedby={error ? "search-error" : "search-hint"}
               className="w-full bg-transparent border-none outline-none focus:ring-0 text-foreground font-medium placeholder:text-slate-400 placeholder:font-normal px-3 sm:px-4 py-3 sm:py-4 text-[15px] sm:text-lg"
             />
           </div>
@@ -128,7 +128,11 @@ const SearchSection = ({ onSearch, onSearchingChange }: SearchSectionProps) => {
             <p id="search-error" className="text-[13.5px] font-semibold text-destructive animate-fade-in-up">
               {error}
             </p>
-          ) : null}
+          ) : (
+            <p id="search-hint" className="text-[13px] font-medium text-slate-500">
+              Masukkan nomor permohonan sesuai data yang diterima dari OSS.
+            </p>
+          )}
         </div>
       </div>
     </section>
