@@ -546,7 +546,7 @@ const AdminDashboard = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {isListRefreshing ? (
-                  Array.from({ length: Math.min(itemsPerPage, 5) }).map((_, idx) => (
+                  Array.from({ length: Math.min(paginatedSubmissions.length || itemsPerPage, itemsPerPage) }).map((_, idx) => (
                     <tr key={`admin-skeleton-${idx}`} className="bg-white">
                       <td className="px-4 py-4 align-middle"><Skeleton className="h-4 w-32 rounded-full" /></td>
                       <td className="px-4 py-4 align-middle">
@@ -574,8 +574,7 @@ const AdminDashboard = () => {
 		                      />
 	                    </td>
 	                  </tr>
-                ) : null}
-                {paginatedSubmissions.map((s, idx) => {
+                ) : paginatedSubmissions.map((s, idx) => {
                   const display = deriveDisplayStatus(s);
                   const st = statusLabel[display.type];
                   const submissionTypeClass = submissionTypeLabelClass[s.submissionType] || "bg-slate-50 border-slate-100 text-slate-500";
