@@ -20,7 +20,7 @@ const EmptyState = ({
 }: EmptyStateProps) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center animate-fade-in-up ${compact ? "p-5 sm:p-6" : "p-6 sm:p-8"} ${className}`}
+      className={`flex flex-col items-center justify-center text-center whitespace-normal animate-fade-in-up ${compact ? "p-5 sm:p-6" : "p-6 sm:p-8"} ${className}`}
     >
       <div
         className={`flex items-center justify-center rounded-2xl bg-slate-100/80 mb-5 shadow-sm border border-slate-200/50 relative ${
