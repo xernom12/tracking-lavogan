@@ -1157,6 +1157,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<ApprovalFinalizeInput | null>(null);
+  const [isSavingApproval, setIsSavingApproval] = useState(false);
   const [errors, setErrors] = useState<{
     approvalDate?: string;
     pbUmkuNumber?: string;
@@ -1191,6 +1192,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
     });
     setSelectedFile(null);
     setErrors({});
+    setIsSavingApproval(false);
   }, [submission.id, submission.approvalDate, submission.licenseNumber, submission.skFileName, submission.skFileSizeBytes]);
 
   useEffect(() => {
@@ -1302,9 +1304,15 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
     }
   };
 
-  const handleConfirmApproval = () => {
-    if (!pendingPayload) return;
-    finalizeApproval(submission.id, pendingPayload);
+  const handleConfirmApproval = async () => {
+    if (!pendingPayload || isSavingApproval) return;
+
+    setIsSavingApproval(true);
+    const isSaved = await finalizeApproval(submission.id, pendingPayload);
+    setIsSavingApproval(false);
+
+    if (!isSaved) return;
+
     setPendingPayload(null);
     setIsConfirmDialogOpen(false);
     scrollWindowToTop();
@@ -1366,7 +1374,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
           <FileAttachmentCard
             fileName={currentFileName}
             fileSizeBytes={currentFileSize}
-            statusLabel="Telah diunggah"
+            statusLabel={selectedFile ? "Siap diunggah" : "Telah diunggah"}
             onPreview={handlePreviewFile}
             onRemove={handleRemoveFile}
           />
@@ -1384,10 +1392,11 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
         <button
           type="button"
           onClick={handleSubmit}
+          disabled={isSavingApproval}
           className="app-primary-button inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold sm:w-auto"
         >
           <Upload className="w-4 h-4 stroke-[3]" />
-          Simpan Persetujuan & Lanjut
+          {isSavingApproval ? "Menyimpan..." : "Simpan Persetujuan & Lanjut"}
         </button>
       </div>
 
@@ -1399,7 +1408,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
         }}
         title="Simpan Persetujuan & Lanjut ke Izin Terbit?"
         description="Data persetujuan akan disimpan dan proses akan dilanjutkan ke tahap Izin Terbit."
-        confirmLabel="Ya, Simpan & Lanjut"
+        confirmLabel={isSavingApproval ? "Menyimpan..." : "Ya, Simpan & Lanjut"}
         onConfirm={handleConfirmApproval}
       />
     </div>
@@ -1413,6 +1422,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
   const isApprovalDraftReady = hasApprovalDraftReadyForIssuance(submission);
   const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | "">(submission.licenseStatus || "");
   const [error, setError] = useState<string>("");
+  const [isIssuingLicense, setIsIssuingLicense] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<LicenseIssuanceInput | null>(null);
@@ -1422,6 +1432,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
     setLicenseStatus(submission.licenseStatus || "");
     licenseStatusRef.current = submission.licenseStatus || "";
     setError("");
+    setIsIssuingLicense(false);
     setPendingStatus(null);
     setIsConfirmDialogOpen(false);
   }, [submission.id, submission.licenseIssued, submission.licenseStatus, submission.lastUpdated]);
@@ -1457,10 +1468,15 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
     setIsConfirmDialogOpen(true);
   };
 
-  const handleConfirmIssueLicense = () => {
-    if (!pendingStatus || !isLicenseStatus(pendingStatus.status)) return;
+  const handleConfirmIssueLicense = async () => {
+    if (!pendingStatus || !isLicenseStatus(pendingStatus.status) || isIssuingLicense) return;
 
-    issueLicense(submission.id, pendingStatus);
+    setIsIssuingLicense(true);
+    const isSaved = await issueLicense(submission.id, pendingStatus);
+    setIsIssuingLicense(false);
+
+    if (!isSaved) return;
+
     setPendingStatus(null);
     setIsConfirmDialogOpen(false);
     scrollWindowToTop();
@@ -1529,10 +1545,11 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
           <button
             type="button"
             onClick={prepareIssueLicense}
+            disabled={isIssuingLicense}
             className="app-primary-button inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold sm:w-auto"
           >
             <Check className="w-4 h-4 stroke-[3]" />
-            Tetapkan Izin Terbit
+            {isIssuingLicense ? "Menyimpan..." : "Tetapkan Izin Terbit"}
           </button>
         </div>
 
@@ -1544,7 +1561,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
           }}
           title="Tetapkan Izin Terbit?"
           description="Status izin akan disimpan dan proses permohonan akan dinyatakan selesai."
-          confirmLabel="Ya, Tetapkan Izin"
+          confirmLabel={isIssuingLicense ? "Menyimpan..." : "Ya, Tetapkan Izin"}
           onConfirm={handleConfirmIssueLicense}
         />
       </div>

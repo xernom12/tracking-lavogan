@@ -148,23 +148,25 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
   const applyRemoteMutation = async (
     optimisticSubmissions: AdminSubmission[],
     remoteTask: () => Promise<AdminSubmission | void>,
-  ) => {
+  ): Promise<boolean> => {
     submissionsRef.current = optimisticSubmissions;
     setSubmissions(optimisticSubmissions);
 
-    if (!remoteModeEnabled) return;
+    if (!remoteModeEnabled) return true;
 
     try {
       const updatedSubmission = await remoteTask();
       if (updatedSubmission) {
         setSubmissions((currentSubmissions) => mergeUpdatedSubmission(currentSubmissions, updatedSubmission));
-        return;
+        return true;
       }
 
       await syncFromRemote(false);
+      return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Sinkronisasi data ke server gagal.");
       await syncFromRemote(false);
+      return false;
     }
   };
 
@@ -216,7 +218,7 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
       input,
     );
 
-    void applyRemoteMutation(optimisticSubmissions, async () =>
+    return applyRemoteMutation(optimisticSubmissions, async () =>
       runRemoteSubmissionAction(id, "uploadRevisionDocument", {
         phase,
         documentNumber,
@@ -251,7 +253,7 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
     };
     const optimisticSubmissions = finalizeApprovalSubmission(currentSubmissions, id, optimisticInput, actor);
 
-    void applyRemoteMutation(optimisticSubmissions, async () =>
+    return applyRemoteMutation(optimisticSubmissions, async () =>
       runRemoteSubmissionAction(id, "finalizeApproval", optimisticInput));
   };
 
@@ -259,7 +261,7 @@ export const SubmissionProvider = ({ children }: { children: ReactNode }) => {
     const actor = getCurrentActor(AUTH_USER_STORAGE_KEY);
     const optimisticSubmissions = issueLicenseSubmission(submissionsRef.current, id, input, actor);
 
-    void applyRemoteMutation(optimisticSubmissions, async () =>
+    return applyRemoteMutation(optimisticSubmissions, async () =>
       runRemoteSubmissionAction(id, "issueLicense", input));
   };
 

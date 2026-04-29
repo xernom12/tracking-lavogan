@@ -396,6 +396,7 @@ const RevisionUploadPanel = ({
     fileSizeBytes: number;
     file: File;
   } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -422,13 +423,18 @@ const RevisionUploadPanel = ({
     setIsConfirmDialogOpen(true);
   };
 
-  const handleConfirmUpload = () => {
-    if (!pendingUpload) return;
+  const handleConfirmUpload = async () => {
+    if (!pendingUpload || isUploading) return;
 
-    uploadRevisionDocument(submissionId, phase, documentNumber, {
+    setIsUploading(true);
+    const isSaved = await uploadRevisionDocument(submissionId, phase, documentNumber, {
       ...pendingUpload,
       publicActionToken: doc.publicUploadToken,
     });
+    setIsUploading(false);
+
+    if (!isSaved) return;
+
     setPendingUpload(null);
     setIsConfirmDialogOpen(false);
 
@@ -494,7 +500,7 @@ const RevisionUploadPanel = ({
         }}
         title={`Unggah dokumen perbaikan ${getWorkflowPhaseLabel(phase)}?`}
         description="Dokumen perbaikan akan disampaikan dan menunggu pemeriksaan ulang oleh admin."
-        confirmLabel="Ya, Unggah Dokumen"
+        confirmLabel={isUploading ? "Mengunggah..." : "Ya, Unggah Dokumen"}
         onConfirm={handleConfirmUpload}
       />
     </div>

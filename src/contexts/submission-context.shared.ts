@@ -22,11 +22,11 @@ export interface SubmissionContextType {
     phase: DocumentUploadPhase,
     documentNumber: number,
     input: RevisionUploadInput,
-  ) => void;
+  ) => Promise<boolean>;
   submitVerificationSession: (id: string, decisions: SessionDecisionInput[]) => void;
   submitReviewSession: (id: string, decisions: SessionDecisionInput[]) => void;
-  finalizeApproval: (id: string, input: ApprovalFinalizeInput) => void;
-  issueLicense: (id: string, input: LicenseIssuanceInput) => void;
+  finalizeApproval: (id: string, input: ApprovalFinalizeInput) => Promise<boolean>;
+  issueLicense: (id: string, input: LicenseIssuanceInput) => Promise<boolean>;
 }
 
 export const SubmissionContext = createContext<SubmissionContextType | null>(null);
