@@ -17,8 +17,7 @@ const ProgressStepper = ({ stages, selectedIndex, onStageClick }: ProgressSteppe
 
   return (
     <div className="app-surface-card p-5 sm:p-8 relative overflow-hidden transition-shadow duration-300">
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-px bg-slate-100 pointer-events-none" />
 
       <div className="flex items-start justify-between relative px-2 sm:px-8 mt-4 z-10 w-full h-[84px] sm:h-[90px]">
         {/* Track Line */}
@@ -41,7 +40,6 @@ const ProgressStepper = ({ stages, selectedIndex, onStageClick }: ProgressSteppe
               aria-label={`${stage.label}. Status ${stage.status === "completed" ? "selesai" : stage.status === "active" ? "aktif" : "belum diproses"}.`}
               aria-current={isSelected ? "step" : undefined}
               aria-pressed={isSelected}
-              title={`${stage.label} - ${stage.status === "completed" ? "Selesai" : stage.status === "active" ? "Aktif" : "Belum Diproses"}`}
               className={`relative flex flex-col items-center flex-1 bg-transparent border-0 p-0 group ${clickable ? "cursor-pointer" : "cursor-not-allowed opacity-70"}`}
             >
               <StepIcon status={stage.status} index={i} clickable={clickable} />

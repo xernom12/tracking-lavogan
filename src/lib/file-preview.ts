@@ -30,7 +30,7 @@ export const buildMetadataPreviewHref = ({
 }: MetadataPreviewInput) => {
   const lines = [
     fileName,
-    `${formatBytes(fileSizeBytes)} | Terupload`,
+    `${formatBytes(fileSizeBytes)} | Telah diunggah`,
     ...extraLines,
   ];
 

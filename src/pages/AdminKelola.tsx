@@ -83,9 +83,7 @@ const AdminKelola = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-clip">
-      {/* Decorative background blur */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-white/45 pointer-events-none" />
 
       <AppHeader variant="admin" />
 
@@ -95,7 +93,6 @@ const AdminKelola = () => {
 	          <button
 	            type="button"
 	            aria-label="Kembali ke dashboard admin"
-	            title="Kembali ke dashboard admin"
 	            onClick={() => navigate("/admin")}
 	            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-500 shadow-sm transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
 	          >

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/useAuth";
 
 const AdminLogin = () => {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +24,7 @@ const AdminLogin = () => {
 
   const switchMode = (nextMode: "login" | "register") => {
     setMode(nextMode);
+    setSearchParams(nextMode === "register" ? { mode: "register" } : {}, { replace: true });
     setError("");
     setPassword("");
     setConfirmPassword("");

@@ -149,19 +149,19 @@
   }
 
   .app-surface-card {
-    @apply rounded-[2rem] border border-white bg-white/80 shadow-elevated backdrop-blur-xl;
+    @apply rounded-[1.25rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)];
   }
 
   .app-surface-card-soft {
-    @apply rounded-[2rem] border border-white bg-white/60 shadow-elevated backdrop-blur-xl;
+    @apply rounded-[1.25rem] border border-slate-200/80 bg-slate-50/70 shadow-[0_8px_30px_rgba(15,23,42,0.035)];
   }
 
   .app-surface-tile {
-    @apply rounded-2xl border border-white/70 bg-white/60 shadow-sm backdrop-blur-sm;
+    @apply rounded-xl border border-slate-200/80 bg-white shadow-sm;
   }
 
   .app-surface-panel {
-    @apply rounded-[1.5rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+    @apply rounded-[1.25rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)];
   }
 
   .app-surface-panel-soft {
@@ -209,7 +209,7 @@
   }
 
   .app-form-field {
-    @apply h-11 w-full rounded-xl border border-slate-200/90 bg-slate-50/80 px-4 text-sm font-medium text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-[background-color,border-color,box-shadow,color] duration-200 placeholder:font-normal placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:border-slate-200/80 disabled:bg-slate-100/80 disabled:text-slate-400 disabled:shadow-none;
+    @apply h-11 w-full rounded-xl border border-slate-200/90 bg-slate-50/80 px-4 text-sm font-medium text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-[background-color,border-color,box-shadow,color] duration-200 placeholder:font-normal placeholder:text-slate-400 focus:border-primary/55 focus:bg-white focus:outline-none focus:ring-0 focus:shadow-[inset_0_0_0_1px_rgba(13,148,136,0.35),0_0_0_3px_rgba(13,148,136,0.12),0_10px_24px_rgba(15,23,42,0.06)] disabled:cursor-not-allowed disabled:border-slate-200/80 disabled:bg-slate-100/80 disabled:text-slate-400 disabled:shadow-none;
   }
 
   .app-form-select {
@@ -217,11 +217,11 @@
   }
 
   .app-form-textarea {
-    @apply min-h-[112px] w-full rounded-xl border border-slate-200/90 bg-slate-50/80 px-4 py-3 text-sm font-medium text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-[background-color,border-color,box-shadow,color] duration-200 placeholder:font-normal placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:border-slate-200/80 disabled:bg-slate-100/80 disabled:text-slate-400 disabled:shadow-none;
+    @apply min-h-[112px] w-full rounded-xl border border-slate-200/90 bg-slate-50/80 px-4 py-3 text-sm font-medium text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-[background-color,border-color,box-shadow,color] duration-200 placeholder:font-normal placeholder:text-slate-400 focus:border-primary/55 focus:bg-white focus:outline-none focus:ring-0 focus:shadow-[inset_0_0_0_1px_rgba(13,148,136,0.35),0_0_0_3px_rgba(13,148,136,0.12),0_10px_24px_rgba(15,23,42,0.06)] disabled:cursor-not-allowed disabled:border-slate-200/80 disabled:bg-slate-100/80 disabled:text-slate-400 disabled:shadow-none;
   }
 
   .app-form-field-error {
-    @apply border-status-revision bg-status-revision/5 focus:border-status-revision focus:ring-status-revision/15;
+    @apply border-status-revision bg-status-revision/5 focus:border-status-revision focus:ring-0 focus:shadow-[inset_0_0_0_1px_rgba(185,28,28,0.34),0_0_0_3px_rgba(185,28,28,0.12),0_10px_24px_rgba(15,23,42,0.06)];
   }
 
   .app-field-label {

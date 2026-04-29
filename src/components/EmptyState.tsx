@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 interface EmptyStateProps {
   icon?: React.ElementType;
   title: string;
-  description: string;
+  description?: string;
   action?: ReactNode;
   className?: string;
   compact?: boolean;
@@ -38,13 +38,15 @@ const EmptyState = ({
       >
         {title}
       </h3>
-      <p
-        className={`text-slate-500 font-medium max-w-md mx-auto ${
-          compact ? "text-[12.5px] sm:text-[13px] leading-relaxed max-w-sm" : "text-[14px] sm:text-[15px] leading-relaxed"
-        }`}
-      >
-        {description}
-      </p>
+      {description ? (
+        <p
+          className={`text-slate-500 font-medium max-w-md mx-auto ${
+            compact ? "text-[12.5px] sm:text-[13px] leading-relaxed max-w-sm" : "text-[14px] sm:text-[15px] leading-relaxed"
+          }`}
+        >
+          {description}
+        </p>
+      ) : null}
       {action ? <div className={`${compact ? "mt-4 sm:mt-5" : "mt-6 sm:mt-8"}`}>{action}</div> : null}
     </div>
   );

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminSubmission, NewSubmissionInput } from "@/contexts/SubmissionContext";
 import { useSubmissions } from "@/contexts/useSubmissions";
 import { deriveDisplayStatus, deriveStages } from "@/data/mockData";
@@ -8,6 +8,7 @@ import type { DisplayStatusType } from "@/data/mockData";
 import AppHeader from "@/components/AppHeader";
 import EmptyState from "@/components/EmptyState";
 import FlowConfirmDialog from "@/components/FlowConfirmDialog";
+import IndonesianCalendarInput from "@/components/IndonesianCalendarInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -115,16 +116,6 @@ const parseUpdatedAt = (value: string): number => {
   }
 
   return new Date(year, month, day).getTime();
-};
-
-const openNativeDatePickerOnClick = (event: MouseEvent<HTMLInputElement>) => {
-  const input = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
-  if (typeof input.showPicker !== "function") return;
-  try {
-    input.showPicker();
-  } catch {
-    // no-op: some browsers throw when picker invocation is blocked
-  }
 };
 
 const stageMetricKeyByIndex = [
@@ -412,9 +403,7 @@ const AdminDashboard = () => {
   };
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-clip">
-      {/* Decorative background blurs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-white/45 pointer-events-none" />
 
       <AppHeader variant="admin" />
 
@@ -505,7 +494,7 @@ const AdminDashboard = () => {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    aria-label="Urutkan Daftar Permohonan"
+                    aria-label="Urutkan daftar permohonan"
                     className="app-utility-button inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl p-0 text-slate-600"
                   >
                     <ArrowUpDown className="w-4 h-4 stroke-[2.5]" />
@@ -522,8 +511,7 @@ const AdminDashboard = () => {
 
 	              <button
 	                onClick={handleOpenAdd}
-	                title="Buat Permohonan Baru"
-	                aria-label="Buat Permohonan Baru"
+	                aria-label="Tambah permohonan baru"
 	                className="app-primary-button inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl p-0"
               >
 	                <Plus className="w-5 h-5 stroke-[2.5]" />
@@ -589,7 +577,7 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="px-4 py-4 align-middle lg:max-w-[320px] max-w-[200px]">
-                        <div className="font-medium text-slate-800 truncate text-[14px]" title={s.organizationName}>{s.organizationName}</div>
+                        <div className="font-medium text-slate-800 truncate text-[14px]">{s.organizationName}</div>
                         <div className="mt-1 flex items-center gap-2">
                           <span className={`app-badge-sm normal-case tracking-normal ${submissionTypeClass}`}>{s.submissionType}</span>
                           <span className="text-[11.5px] text-slate-500">KBLI: {normalizeKbliCode(s.kbli)}</span>
@@ -621,7 +609,6 @@ const AdminDashboard = () => {
                               });
                               setIsManageDialogOpen(true);
                             }}
-                            title="Kelola Permohonan"
                             aria-label="Kelola Permohonan"
 	                            className="app-utility-button inline-flex h-10 w-10 items-center justify-center rounded-xl p-0 text-slate-500"
 	                          >
@@ -700,11 +687,11 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      {/* Modal Buat Permohonan Baru */}
+      {/* Modal Tambah Permohonan Baru */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogContent className="sm:max-w-[34rem]">
           <DialogHeader>
-            <DialogTitle className="font-heading">Buat Permohonan Baru</DialogTitle>
+            <DialogTitle className="font-heading">Tambah Permohonan Baru</DialogTitle>
             <DialogDescription className="max-w-[30rem]">
               Lengkapi data permohonan sebelum disimpan pada tahap Pengajuan.
             </DialogDescription>
@@ -714,20 +701,16 @@ const AdminDashboard = () => {
               <label htmlFor="new-submission-date" className={dialogLabelClassName}>
                 Tanggal pengajuan <span className="text-status-revision">*</span>
               </label>
-              <input
+              <IndonesianCalendarInput
                 id="new-submission-date"
-                type="date"
-                max={new Date().toLocaleDateString('en-CA')}
                 value={form.pengajuanDate}
-                onClick={openNativeDatePickerOnClick}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  // Cegah input tahun lebih dari 4 digit (bug bawaan Chrome)
-                  if (val && val.split('-')[0].length > 4) return;
+                onChange={(val) => {
                   setForm((f) => ({ ...f, pengajuanDate: val }));
                   setFormErrors((err) => ({ ...err, pengajuanDate: undefined }));
                 }}
-                className={`${dialogFieldClassName} ${formErrors.pengajuanDate ? "border-status-revision focus:ring-status-revision/20" : ""} relative cursor-pointer`}
+                hasError={!!formErrors.pengajuanDate}
+                className={`${dialogFieldClassName} relative cursor-pointer`}
+                placeholder="Pilih tanggal pengajuan"
               />
               {formErrors.pengajuanDate && (
                 <p className={dialogErrorClassName}>{formErrors.pengajuanDate}</p>
@@ -746,7 +729,7 @@ const AdminDashboard = () => {
                   setFormErrors((err) => ({ ...err, submissionNumber: undefined }));
                 }}
                 placeholder="Masukkan nomor permohonan"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.submissionNumber ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.submissionNumber ? "app-form-field-error" : ""}`}
               />
               {formErrors.submissionNumber && (
                 <p className={dialogErrorClassName}>{formErrors.submissionNumber}</p>
@@ -765,7 +748,7 @@ const AdminDashboard = () => {
                   setFormErrors((err) => ({ ...err, organizationName: undefined }));
                 }}
                 placeholder="Masukkan nama perusahaan/LPK"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.organizationName ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.organizationName ? "app-form-field-error" : ""}`}
               />
               {formErrors.organizationName && (
                 <p className={dialogErrorClassName}>{formErrors.organizationName}</p>
@@ -784,7 +767,7 @@ const AdminDashboard = () => {
                   setFormErrors((err) => ({ ...err, nib: undefined }));
                 }}
                 placeholder="Masukkan NIB"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.nib ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.nib ? "app-form-field-error" : ""}`}
               />
               {formErrors.nib && (
                 <p className={dialogErrorClassName}>{formErrors.nib}</p>
@@ -801,7 +784,7 @@ const AdminDashboard = () => {
                   setForm((f) => ({ ...f, kbli: e.target.value }));
                   setFormErrors((err) => ({ ...err, kbli: undefined }));
                 }}
-                className={`${dialogSelectClassName} ${!form.kbli ? "text-muted-foreground" : "text-foreground"} overflow-hidden text-ellipsis whitespace-nowrap ${formErrors.kbli ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogSelectClassName} ${!form.kbli ? "text-muted-foreground" : "text-foreground"} overflow-hidden text-ellipsis whitespace-nowrap ${formErrors.kbli ? "app-form-field-error" : ""}`}
               >
                 <option value="" disabled hidden>Pilih KBLI</option>
                 {KBLI_OPTIONS.map((option) => (
@@ -829,7 +812,7 @@ const AdminDashboard = () => {
                   }));
                   setFormErrors((err) => ({ ...err, submissionType: undefined }));
                 }}
-                className={`${dialogSelectClassName} ${!form.submissionType ? "text-muted-foreground" : "text-foreground"} ${formErrors.submissionType ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogSelectClassName} ${!form.submissionType ? "text-muted-foreground" : "text-foreground"} ${formErrors.submissionType ? "app-form-field-error" : ""}`}
               >
                 <option value="" disabled hidden>Pilih jenis permohonan</option>
                 <option value="Baru" className="text-foreground">Baru</option>
@@ -852,7 +835,7 @@ const AdminDashboard = () => {
               onClick={handleSubmitAdd}
               className="app-primary-button inline-flex h-11 w-full items-center justify-center rounded-xl px-5 text-sm font-semibold sm:w-auto"
             >
-              Buat Permohonan
+              Simpan Permohonan
             </button>
           </DialogFooter>
         </DialogContent>
@@ -864,9 +847,9 @@ const AdminDashboard = () => {
           setIsAddConfirmDialogOpen(open);
           if (!open) setPendingAddSubmission(null);
         }}
-        title="Buat Permohonan Baru?"
+        title="Simpan Permohonan Baru?"
         description="Permohonan baru akan disimpan pada tahap Pengajuan."
-        confirmLabel="Ya, Buat Permohonan"
+        confirmLabel="Ya, Simpan Permohonan"
         onConfirm={handleConfirmAdd}
       />
 
@@ -951,11 +934,11 @@ const AdminDashboard = () => {
 	      <Dialog open={!!selectedMetric} onOpenChange={(open) => { if (!open) setSelectedMetric(null); }}>
 	        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-	            <DialogTitle className="font-heading">
-	              {selectedMetricCard?.label || "Detail Data"} ({selectedMetricSubmissions.length})
-	            </DialogTitle>
+            <DialogTitle className="font-heading">
+              {selectedMetricCard?.label || "Detail Data"} ({selectedMetricSubmissions.length})
+            </DialogTitle>
             <DialogDescription>
-              {selectedMetricCard?.helper || "Daftar permohonan pada kategori ini."} Pilih salah satu baris untuk membuka detail permohonan secara lengkap.
+              Permohonan pada tahap penetapan atau sudah memiliki izin terbit.
             </DialogDescription>
           </DialogHeader>
 	          <div className="max-h-[60vh] overflow-y-auto pr-1">
@@ -963,7 +946,6 @@ const AdminDashboard = () => {
 	                <EmptyState
 	                  icon={FileText}
 	                  title="Belum ada permohonan"
-	                  description="Data akan muncul saat ada permohonan pada kategori ini."
 	                  compact
 	                />
 			            ) : (

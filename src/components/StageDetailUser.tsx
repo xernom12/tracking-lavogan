@@ -461,7 +461,7 @@ const RevisionUploadPanel = ({
             {latestUpload.fileName} ({formatBytes(latestUpload.fileSizeBytes)})
           </p>
           <p className="text-[11.5px] text-slate-500 mt-1">
-            Diupload pada {latestUpload.date}, {latestUpload.time}
+            Diunggah pada {latestUpload.date}, {latestUpload.time}
           </p>
           {latestUpload.fileUrl ? (
             <div className="mt-3 flex items-center gap-2">
@@ -567,7 +567,8 @@ const ProcessCycleHistory = ({ submission, phase, title }: ProcessCycleHistoryPr
                           </p>
                         </div>
                         <span
-                          title={getDocumentStatusLabel(entry.status)}
+                          role="img"
+                          aria-label={getDocumentStatusLabel(entry.status)}
                           className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border shadow-sm ${entry.status === "approved"
                             ? "border-status-completed/20 bg-status-completed-bg text-status-completed"
                             : "border-status-revision/20 bg-status-revision-bg text-status-revision"
@@ -692,7 +693,7 @@ const PersetujuanDetail = ({ submission, completed }: { submission: AdminSubmiss
             <UserFileAttachmentCard
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
-              statusLabel="Terupload"
+              statusLabel="Telah diunggah"
               fileUrl={submission.skFileUrl}
               onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
@@ -728,7 +729,7 @@ const IzinTerbitDetail = ({ submission, completed }: { submission: AdminSubmissi
             <UserFileAttachmentCard
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
-              statusLabel="Terupload"
+              statusLabel="Telah diunggah"
               fileUrl={submission.skFileUrl}
               onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
@@ -756,7 +757,7 @@ const IzinTerbitDetail = ({ submission, completed }: { submission: AdminSubmissi
             <UserFileAttachmentCard
               fileName={submission.skFileName}
               fileSizeBytes={submission.skFileSizeBytes}
-              statusLabel="Terupload"
+              statusLabel="Telah diunggah"
               fileUrl={submission.skFileUrl}
               onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
                 title: "Pratinjau Izin PB UMKU",
@@ -806,7 +807,7 @@ const UserFileAttachmentCard = ({
       </span>
     </div>
     <div className="min-w-0 flex-1">
-      <p className="truncate text-sm font-semibold text-slate-800" title={fileName}>{fileName}</p>
+      <p className="truncate text-sm font-semibold text-slate-800">{fileName}</p>
       <div className="app-file-card-meta">
         <span>{formatBytes(fileSizeBytes)}</span>
         <span className="text-slate-300">|</span>
@@ -829,7 +830,6 @@ const UserFileAttachmentCard = ({
           setTimeout(() => toast.info("Proses unduh dokumen telah selesai."), 1500);
         }}
         aria-label={`Unduh dokumen ${fileName}`}
-        title={`Unduh dokumen ${fileName}`}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg p-0 text-slate-600 border border-slate-200 bg-white"
       >
         <Download className="w-4 h-4" />
@@ -840,7 +840,6 @@ const UserFileAttachmentCard = ({
           type="button"
           onClick={onPreview}
           aria-label={`Lihat dokumen ${fileName}`}
-          title={`Lihat dokumen ${fileName}`}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg p-0 text-slate-600 border border-slate-200 bg-white"
         >
           <Eye className="w-4 h-4" />

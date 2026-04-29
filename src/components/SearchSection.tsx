@@ -44,9 +44,7 @@ const SearchSection = ({ onSearch, onSearchingChange }: SearchSectionProps) => {
 
   return (
     <section className="bg-gradient-to-b from-primary/5 via-background to-background pt-20 sm:pt-24 pb-6 sm:pb-10 px-4 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-[500px] bg-primary/10 blur-[100px] pointer-events-none rounded-full mix-blend-multiply" />
-      <div className="absolute top-20 -left-20 w-72 h-72 bg-primary/10 blur-[80px] pointer-events-none rounded-full mix-blend-multiply" />
-      <div className="absolute top-40 -right-20 w-80 h-80 bg-teal-400/10 blur-[80px] pointer-events-none rounded-full mix-blend-multiply" />
+      <div className="absolute inset-x-0 top-0 h-px bg-primary/10 pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto text-center z-10 animate-fade-in-up">
         <div className="inline-flex items-center gap-2 bg-white/60 rounded-full px-4 sm:px-5 py-2 mb-5 sm:mb-8 shadow-sm border border-white/80 backdrop-blur-md">
@@ -68,8 +66,8 @@ const SearchSection = ({ onSearch, onSearchingChange }: SearchSectionProps) => {
         <form
           onSubmit={handleSubmit}
           className={`flex flex-col sm:flex-row items-stretch sm:items-center p-2 max-w-2xl mx-auto relative z-20 bg-white/90 backdrop-blur-xl shadow-elevated rounded-2xl border border-white transition-all duration-300 ${error
-            ? "border-destructive/50 ring-4 ring-destructive/10"
-            : "hover:border-primary/30 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15"
+            ? "border-destructive/60 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.32),0_0_0_3px_rgba(185,28,28,0.12),0_16px_42px_rgba(15,23,42,0.10)]"
+            : "hover:border-primary/35 focus-within:border-primary/55 focus-within:shadow-[inset_0_0_0_1px_rgba(13,148,136,0.35),0_0_0_3px_rgba(13,148,136,0.13),0_18px_44px_rgba(15,23,42,0.10)]"
             }`}
           aria-busy={isSearching}
         >

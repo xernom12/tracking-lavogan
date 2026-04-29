@@ -24,6 +24,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FlowConfirmDialog from "@/components/FlowConfirmDialog";
+import IndonesianCalendarInput from "@/components/IndonesianCalendarInput";
 import {
   buildMetadataPreviewHref,
   downloadFileFromHref,
@@ -213,14 +214,14 @@ const buildSessionEditorDrafts = (
 const DocumentStatusIcon = ({ status }: { status: "approved" | "revision_required" | "locked" | "empty" }) => {
   if (status === "approved") {
     return (
-      <div title={getDocumentStatusLabel("approved")} className="w-8 h-8 rounded-full bg-status-completed-bg text-status-completed flex items-center justify-center shrink-0 border border-status-completed/20 shadow-sm">
+      <div role="img" aria-label={getDocumentStatusLabel("approved")} className="w-8 h-8 rounded-full bg-status-completed-bg text-status-completed flex items-center justify-center shrink-0 border border-status-completed/20 shadow-sm">
         <Check className="w-4 h-4 stroke-[2.5]" />
       </div>
     );
   }
   if (status === "revision_required") {
     return (
-      <div title={getDocumentStatusLabel("revision_required")} className="w-8 h-8 rounded-full bg-status-revision-bg text-status-revision flex items-center justify-center shrink-0 border border-status-revision/20 shadow-sm">
+      <div role="img" aria-label={getDocumentStatusLabel("revision_required")} className="w-8 h-8 rounded-full bg-status-revision-bg text-status-revision flex items-center justify-center shrink-0 border border-status-revision/20 shadow-sm">
         <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
       </div>
     );
@@ -228,7 +229,8 @@ const DocumentStatusIcon = ({ status }: { status: "approved" | "revision_require
   if (status === "empty") {
     return (
       <div
-        title="Status belum dipilih"
+        role="img"
+        aria-label="Status belum dipilih"
         className="w-8 h-8 rounded-full border border-slate-200 bg-slate-50 text-slate-400 flex items-center justify-center shrink-0 shadow-sm"
       >
         <Clock className="w-3.5 h-3.5 stroke-[2.2]" />
@@ -236,7 +238,7 @@ const DocumentStatusIcon = ({ status }: { status: "approved" | "revision_require
     );
   }
   return (
-    <div title={getDocumentStatusLabel("locked")} className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200 shadow-sm">
+    <div role="img" aria-label={getDocumentStatusLabel("locked")} className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200 shadow-sm">
       <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
     </div>
   );
@@ -361,15 +363,6 @@ const formatDisplayDate = (value: string): string => {
   });
 };
 
-const openDateInputPicker = (input: HTMLInputElement & { showPicker?: () => void }) => {
-  if (typeof input.showPicker !== "function") return;
-  try {
-    input.showPicker();
-  } catch {
-    // Some browsers block programmatic picker access outside direct user interaction.
-  }
-};
-
 const StageDetailAdmin = ({ submission, stageIndex, stages }: StageDetailAdminProps) => {
   const stage = stages[stageIndex];
   const hasMountedRef = useRef(false);
@@ -448,7 +441,7 @@ const StageDetailAdmin = ({ submission, stageIndex, stages }: StageDetailAdminPr
 	                  <FileAttachmentCard
 	                    fileName={submission.skFileName}
 	                    fileSizeBytes={submission.skFileSizeBytes}
-	                    statusLabel="Terupload"
+	                    statusLabel="Telah diunggah"
 	                    fileUrl={submission.skFileUrl}
 	                    onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
 	                      title: "Pratinjau Izin PB UMKU",
@@ -633,7 +626,6 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
         <button
           type="button"
           onClick={openEditDialog}
-          title="Edit data permohonan"
           aria-label="Edit data permohonan"
           className="app-utility-button inline-flex h-11 w-full items-center justify-center rounded-xl text-slate-600 sm:w-11 sm:px-0"
         >
@@ -667,21 +659,16 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
               <label htmlFor="edit-submission-date" className={dialogLabelClassName}>
                 Tanggal pengajuan <span className="text-status-revision">*</span>
               </label>
-              <input
+              <IndonesianCalendarInput
                 id="edit-submission-date"
-                type="date"
-                max={new Date().toLocaleDateString('en-CA')} // 'en-CA' gives YYYY-MM-DD
                 value={form.pengajuanDate}
-                onClick={(e) => {
-                  openDateInputPicker(e.currentTarget);
-                }}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val && val.split('-')[0].length > 4) return;
+                onChange={(val) => {
                   setForm((prev) => ({ ...prev, pengajuanDate: val }));
                   setFormErrors((prev) => ({ ...prev, pengajuanDate: undefined }));
                 }}
-                className={`${dialogFieldClassName} ${formErrors.pengajuanDate ? "border-status-revision focus:ring-status-revision/20" : ""} relative cursor-pointer`}
+                hasError={!!formErrors.pengajuanDate}
+                className={`${dialogFieldClassName} relative cursor-pointer`}
+                placeholder="Pilih tanggal pengajuan"
               />
               {formErrors.pengajuanDate ? (
                 <p className={dialogErrorClassName}>{formErrors.pengajuanDate}</p>
@@ -700,7 +687,7 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
                   setFormErrors((prev) => ({ ...prev, submissionNumber: undefined }));
                 }}
                 placeholder="Masukkan nomor permohonan"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.submissionNumber ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.submissionNumber ? "app-form-field-error" : ""}`}
               />
               {formErrors.submissionNumber ? (
                 <p className={dialogErrorClassName}>{formErrors.submissionNumber}</p>
@@ -719,7 +706,7 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
                   setFormErrors((prev) => ({ ...prev, organizationName: undefined }));
                 }}
                 placeholder="Masukkan nama perusahaan/LPK"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.organizationName ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.organizationName ? "app-form-field-error" : ""}`}
               />
               {formErrors.organizationName ? (
                 <p className={dialogErrorClassName}>{formErrors.organizationName}</p>
@@ -738,7 +725,7 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
                   setFormErrors((prev) => ({ ...prev, nib: undefined }));
                 }}
                 placeholder="Masukkan NIB"
-                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.nib ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogFieldClassName} placeholder:text-muted-foreground ${formErrors.nib ? "app-form-field-error" : ""}`}
               />
               {formErrors.nib ? (
                 <p className={dialogErrorClassName}>{formErrors.nib}</p>
@@ -755,7 +742,7 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
                   setForm((prev) => ({ ...prev, kbli: e.target.value }));
                   setFormErrors((prev) => ({ ...prev, kbli: undefined }));
                 }}
-                className={`${dialogSelectClassName} ${!form.kbli ? "text-muted-foreground" : "text-foreground"} overflow-hidden text-ellipsis whitespace-nowrap ${formErrors.kbli ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogSelectClassName} ${!form.kbli ? "text-muted-foreground" : "text-foreground"} overflow-hidden text-ellipsis whitespace-nowrap ${formErrors.kbli ? "app-form-field-error" : ""}`}
               >
                 <option value="" disabled hidden>Pilih KBLI</option>
                 {KBLI_OPTIONS.map((option) => (
@@ -783,7 +770,7 @@ const PengajuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
                   }));
                   setFormErrors((prev) => ({ ...prev, submissionType: undefined }));
                 }}
-                className={`${dialogSelectClassName} ${!form.submissionType ? "text-muted-foreground" : "text-foreground"} ${formErrors.submissionType ? "border-status-revision focus:ring-status-revision/20" : ""}`}
+                className={`${dialogSelectClassName} ${!form.submissionType ? "text-muted-foreground" : "text-foreground"} ${formErrors.submissionType ? "app-form-field-error" : ""}`}
               >
                 <option value="Baru" className="text-foreground">Baru</option>
                 <option value="Perpanjangan" className="text-foreground">Perpanjangan</option>
@@ -1057,7 +1044,7 @@ const SessionEditor = ({
                   <span className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 border ${editorAccent.numberClass}`}>
                     {idx + 1}
                   </span>
-                  <p className="text-[15px] font-bold text-slate-700 flex-1 min-w-0 flex flex-wrap items-center gap-2" title={doc.name}>
+                  <p className="text-[15px] font-bold text-slate-700 flex-1 min-w-0 flex flex-wrap items-center gap-2">
                     <span className="truncate">{doc.name}</span>
                     <RevisionBadge status={doc.status} />
                     <ReuploadReadyBadge visible={isAwaitingAdminReview} />
@@ -1328,23 +1315,19 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="app-info-label text-muted-foreground">
+          <label htmlFor="approval-date" className="app-info-label text-muted-foreground">
             Tanggal Persetujuan <span className="text-status-revision">*</span>
           </label>
-          <input
-            type="date"
-            max={new Date().toLocaleDateString('en-CA')}
+          <IndonesianCalendarInput
+            id="approval-date"
             value={form.approvalDate}
-            onClick={(e) => {
-              openDateInputPicker(e.currentTarget);
-            }}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val && val.split('-')[0].length > 4) return;
+            onChange={(val) => {
               setForm((prev) => ({ ...prev, approvalDate: val }));
               setErrors((prev) => ({ ...prev, approvalDate: undefined }));
             }}
-            className={`app-form-field ${errors.approvalDate ? "app-form-field-error" : ""} relative cursor-pointer`}
+            hasError={!!errors.approvalDate}
+            className="app-form-field relative cursor-pointer"
+            placeholder="Pilih tanggal persetujuan"
           />
           {errors.approvalDate ? <p className="text-xs text-status-revision mt-1">{errors.approvalDate}</p> : null}
         </div>
@@ -1383,7 +1366,7 @@ const PersetujuanAdmin = ({ submission }: { submission: AdminSubmission }) => {
           <FileAttachmentCard
             fileName={currentFileName}
             fileSizeBytes={currentFileSize}
-            statusLabel="Terupload"
+            statusLabel="Telah diunggah"
             onPreview={handlePreviewFile}
             onRemove={handleRemoveFile}
           />
@@ -1500,7 +1483,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
 	            <FileAttachmentCard
 	              fileName={submission.skFileName}
 	              fileSizeBytes={submission.skFileSizeBytes}
-	              statusLabel="Terupload"
+	              statusLabel="Telah diunggah"
 	              fileUrl={submission.skFileUrl}
 	              onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
 	                title: "Pratinjau Izin PB UMKU",
@@ -1509,7 +1492,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
 	                extraLines: [
 	                  `Tanggal Persetujuan: ${submission.approvalDate || "-"}`,
 	                  `Nomor Izin PB UMKU: ${submission.licenseNumber || "-"}`,
-	                  "Status Izin: Menunggu Penetapan",
+                  "Status Izin: Menunggu Penetapan",
 	                ],
 	              }))}
 	            />
@@ -1549,7 +1532,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
             className="app-primary-button inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold sm:w-auto"
           >
             <Check className="w-4 h-4 stroke-[3]" />
-            Simpan Izin Terbit
+            Tetapkan Izin Terbit
           </button>
         </div>
 
@@ -1559,9 +1542,9 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
             setIsConfirmDialogOpen(open);
             if (!open) setPendingStatus(null);
           }}
-          title="Simpan Izin Terbit?"
+          title="Tetapkan Izin Terbit?"
           description="Status izin akan disimpan dan proses permohonan akan dinyatakan selesai."
-          confirmLabel="Ya, Simpan Izin"
+          confirmLabel="Ya, Tetapkan Izin"
           onConfirm={handleConfirmIssueLicense}
         />
       </div>
@@ -1583,7 +1566,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
 	          <FileAttachmentCard
 	            fileName={submission.skFileName}
 	            fileSizeBytes={submission.skFileSizeBytes}
-	            statusLabel="Terupload"
+	            statusLabel="Telah diunggah"
 	            fileUrl={submission.skFileUrl}
 	            onPreview={() => openPreviewWindow(submission.skFileUrl || buildMetadataPreviewHref({
 	              title: "Pratinjau Izin PB UMKU",
@@ -1618,7 +1601,7 @@ const IzinTerbitView = ({ submission }: { submission: AdminSubmission }) => {
         open={isFinishDialogOpen}
         onOpenChange={setIsFinishDialogOpen}
         title="Proses Permohonan Selesai"
-        description="Semua tahapan permohonan penerbitan izin telah terlewati dengan lengkap. Anda akan dikembalikan ke Halaman Kelola Admin."
+        description="Seluruh tahapan permohonan penerbitan izin telah selesai. Anda akan dikembalikan ke halaman Kelola Admin."
         confirmLabel="Selesai"
         onConfirm={() => {
           setIsFinishDialogOpen(false);
@@ -1682,7 +1665,7 @@ const FileAttachmentCard = ({
       </span>
     </div>
     <div className="min-w-0 flex-1">
-      <p className="truncate text-sm font-semibold text-slate-800" title={fileName}>{fileName}</p>
+      <p className="truncate text-sm font-semibold text-slate-800">{fileName}</p>
       <div className="app-file-card-meta">
         <span>{formatBytes(fileSizeBytes)}</span>
         <span className="text-slate-300">|</span>
@@ -1705,7 +1688,6 @@ const FileAttachmentCard = ({
           setTimeout(() => toast.info("Proses unduh dokumen telah selesai."), 1500);
         }}
         aria-label={`Unduh dokumen ${fileName}`}
-        title={`Unduh dokumen ${fileName}`}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg p-0 text-slate-600 border border-slate-200 bg-white"
       >
         <Download className="w-4 h-4" />
@@ -1716,7 +1698,6 @@ const FileAttachmentCard = ({
           type="button"
           onClick={onPreview}
           aria-label={`Lihat dokumen ${fileName}`}
-          title={`Lihat dokumen ${fileName}`}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg p-0 text-slate-600 border border-slate-200 bg-white"
         >
           <Eye className="w-4 h-4" />
@@ -1728,7 +1709,6 @@ const FileAttachmentCard = ({
           type="button"
           onClick={onRemove}
           aria-label={`Hapus dokumen ${fileName}`}
-          title={`Hapus dokumen ${fileName}`}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg p-0 text-slate-400 border border-transparent bg-transparent"
         >
           <Trash2 className="w-4 h-4" />
@@ -1816,7 +1796,8 @@ const SessionHistory = ({ submission, phase }: { submission: AdminSubmission; ph
                             {entry.documentName}
                           </p>
                           <span
-                            title={getDecisionStatusLabel(entry.status)}
+                            role="img"
+                            aria-label={getDecisionStatusLabel(entry.status)}
                             className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border shadow-sm ${entry.status === "approved"
                                 ? "border-status-completed/20 bg-status-completed-bg text-status-completed"
                                 : "border-status-revision/20 bg-status-revision-bg text-status-revision"

@@ -844,7 +844,7 @@ describe("session flow", () => {
       target: { value: "Aktif" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Simpan Izin Terbit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tetapkan Izin Terbit" }));
 
     await waitFor(() => {
       expect(screen.getByText("Tanggal persetujuan belum tersedia.")).toBeInTheDocument();
@@ -903,10 +903,10 @@ describe("session flow", () => {
     fireEvent.change(screen.getByRole("combobox"), {
       target: { value: "Aktif" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Simpan Izin Terbit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tetapkan Izin Terbit" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Simpan Izin Terbit?" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Tetapkan Izin Terbit?" })).toBeInTheDocument();
     });
   });
 
@@ -949,13 +949,13 @@ describe("session flow", () => {
     expect(screen.queryByText("Perbaiki dokumen 2.")).not.toBeInTheDocument();
     expect(firstDocCard).toHaveClass("border-slate-200");
     expect(revisedDocCard).toHaveClass("border-status-revision");
-    expect(screen.getAllByTitle("Memerlukan Perbaikan").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Memerlukan Perbaikan").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: /Salinan Izin Usaha/i }));
     expect(screen.getByText("Perbaiki dokumen 2.")).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getAllByTitle("Status belum dipilih").length).toBeGreaterThan(0);
+      expect(screen.getAllByLabelText("Status belum dipilih").length).toBeGreaterThan(0);
     });
 
     fireEvent.change(screen.getAllByRole("combobox")[1], {
@@ -967,7 +967,7 @@ describe("session flow", () => {
     expect(within(revisedDocCard).getAllByText("Memerlukan Perbaikan").length).toBeGreaterThan(0);
     expect(revisedDocCard).toHaveClass("border-status-completed");
     expect(revisedDocCard).not.toHaveClass("border-status-revision");
-    expect(screen.getAllByTitle("Sesuai Persyaratan").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Sesuai Persyaratan").length).toBeGreaterThan(0);
 
     fireEvent.change(screen.getAllByRole("combobox")[0], {
       target: { value: "revision_required" },
@@ -980,7 +980,7 @@ describe("session flow", () => {
 
     expect(firstDocCard).toHaveClass("border-status-revision");
     expect(within(firstDocCard).getByText("Catatan perbaikan wajib diisi.")).toBeInTheDocument();
-    expect(screen.getAllByTitle("Memerlukan Perbaikan").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Memerlukan Perbaikan").length).toBeGreaterThan(0);
   });
 
   it("does not keep approved green border from a previous follow-up session", async () => {
@@ -1354,13 +1354,14 @@ describe("session flow", () => {
 
     const initialCount = api!.submissions.length;
 
-    fireEvent.click(screen.getByRole("button", { name: "Buat Permohonan Baru" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tambah permohonan baru" }));
 
-    const formDialog = await screen.findByRole("dialog", { name: "Buat Permohonan Baru" });
+    const formDialog = await screen.findByRole("dialog", { name: "Tambah Permohonan Baru" });
     const dateInput = formDialog.querySelector('input[type="date"]') as HTMLInputElement;
     const selects = formDialog.querySelectorAll("select");
 
     fireEvent.change(dateInput, { target: { value: "2026-04-05" } });
+    expect(within(formDialog).getByRole("button", { name: "Tanggal terpilih 05 April 2026" })).toBeInTheDocument();
     fireEvent.change(within(formDialog).getByPlaceholderText("Masukkan nomor permohonan"), {
       target: { value: "I-202604050000000999999" },
     });
@@ -1377,19 +1378,41 @@ describe("session flow", () => {
       target: { value: "Baru" },
     });
 
-    fireEvent.click(within(formDialog).getByRole("button", { name: "Buat Permohonan" }));
+    fireEvent.click(within(formDialog).getByRole("button", { name: "Simpan Permohonan" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Buat Permohonan Baru?" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Simpan Permohonan Baru?" })).toBeInTheDocument();
     });
 
     expect(api!.submissions).toHaveLength(initialCount);
 
-    fireEvent.click(screen.getByRole("button", { name: "Ya, Buat Permohonan" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ya, Simpan Permohonan" }));
 
     await waitFor(() => {
       expect(api!.submissions).toHaveLength(initialCount + 1);
     });
+  });
+
+  it("uses an Indonesian calendar popup for admin date fields", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <SubmissionProvider>
+            <AdminDashboard />
+          </SubmissionProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Tambah permohonan baru" }));
+
+    const formDialog = await screen.findByRole("dialog", { name: "Tambah Permohonan Baru" });
+    fireEvent.click(within(formDialog).getByRole("button", { name: "Pilih tanggal pengajuan" }));
+
+    expect(await screen.findByRole("button", { name: "Hari ini" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hapus" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Today" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Clear" })).not.toBeInTheDocument();
   });
 
   it("shows dashboard summary counts from the same submissions shown in the table", () => {

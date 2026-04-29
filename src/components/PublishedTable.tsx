@@ -152,7 +152,6 @@ const PublishedTable = () => {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
-                                                    title={`Unduh dokumen ${s.skFileName}`}
                                                     aria-label={`Unduh dokumen ${s.skFileName}`}
                                                 >
                                                     <FileText className="w-4 h-4 stroke-[2]" />

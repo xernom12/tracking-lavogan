@@ -1,6 +1,5 @@
 import { Suspense, lazy, type ReactNode } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -26,10 +25,10 @@ const AppRouteFallback = () => (
   <div className="min-h-screen bg-background px-4 py-12 sm:px-6">
     <div className="mx-auto max-w-6xl animate-pulse space-y-4">
       <div className="h-12 w-56 rounded-2xl bg-slate-200/80" />
-      <div className="h-32 rounded-[2rem] bg-slate-200/70" />
+      <div className="h-32 rounded-[1.25rem] bg-slate-200/70" />
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="h-64 rounded-[2rem] bg-slate-200/70" />
-        <div className="h-64 rounded-[2rem] bg-slate-200/70" />
+        <div className="h-64 rounded-[1.25rem] bg-slate-200/70" />
+        <div className="h-64 rounded-[1.25rem] bg-slate-200/70" />
       </div>
     </div>
   </div>
@@ -37,24 +36,22 @@ const AppRouteFallback = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <SubmissionProvider>
-          <Sonner />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Suspense fallback={<AppRouteFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                <Route path="/admin/kelola/:id" element={<ProtectedRoute><AdminKelola /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </SubmissionProvider>
-      </AuthProvider>
-    </TooltipProvider>
+    <AuthProvider>
+      <SubmissionProvider>
+        <Sonner />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Suspense fallback={<AppRouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/kelola/:id" element={<ProtectedRoute><AdminKelola /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </SubmissionProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -139,7 +139,7 @@ const Index = () => {
       </main>
 
       <footer className="mt-8 border-t border-border py-6">
-        <p className="text-center text-xs text-muted-foreground">Hak Cipta 2026 Kementerian Ketenagakerjaan Republik Indonesia. Seluruh hak dilindungi.</p>
+        <p className="text-center text-xs text-muted-foreground">Hak cipta 2026 Kementerian Ketenagakerjaan Republik Indonesia. Seluruh hak dilindungi.</p>
       </footer>
     </div>
   );
